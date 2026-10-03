@@ -143,8 +143,9 @@
       let { data: report, error: reportError } = await sb.from('paid_reports').select('report').eq('reading_id', readingId).single();
       if (reportError) console.error('PAID REPORT ERROR', reportError);
 
-      // 이전에 생성된 짧은 리포트가 저장되어 있으면 새 상세 리포트로 한 번만 갱신합니다.
-      if (report?.report && Number(report.report._version || 0) < 4) {
+      // 결제된 결과는 최신 리포트 생성 로직으로 한 번 더 확인합니다.
+      // 기존 리포트가 없거나 이전 버전이어도 새 리포트를 받아 표시합니다.
+      if (!report?.report || Number(report.report._version || 0) < 4) {
         try {
           const refresh = await fetch('/payment/regenerate-report', {
             method: 'POST',
