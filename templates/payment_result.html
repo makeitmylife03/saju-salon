@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card checkout-card">
+  <div class="eyebrow">{{ 'PAYMENT COMPLETE' if success else 'PAYMENT' }}</div>
+  <h1>{{ '결제가 완료되었습니다.' if success else '결제 처리에 문제가 있습니다.' }}</h1>
+  <p>{{ message }}</p>
+  {% if success %}
+    <a class="btn" href="{{ redirect_url }}">상세 리포트 보기</a>
+  {% else %}
+    <a class="btn" href="/">사주살롱으로 돌아가기</a>
+  {% endif %}
+</section>
+{% endblock %}
