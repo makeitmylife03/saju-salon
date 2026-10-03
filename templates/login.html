@@ -10,4 +10,53 @@
   </form>
   <div id="login-message" class="notice"></div>
 </section>
+
+<script>
+(() => {
+  const start = () => {
+    const form = document.getElementById('login-form');
+    const emailInput = document.getElementById('login-email');
+    const target = document.getElementById('login-message');
+    if (!form || form.dataset.loginBound === 'true') return;
+    if (!window.supabase || !window.SAJU_CONFIG?.url || !window.SAJU_CONFIG?.key) {
+      target.textContent = '로그인 기능을 불러오지 못했습니다. 페이지를 새로고침해주세요.';
+      return;
+    }
+    const sb = window.supabase.createClient(window.SAJU_CONFIG.url, window.SAJU_CONFIG.key);
+    form.dataset.loginBound = 'true';
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const email = emailInput.value.trim();
+      if (!email) {
+        target.textContent = '이메일 주소를 입력해주세요.';
+        return;
+      }
+      target.textContent = '로그인 메일을 보내는 중입니다...';
+      const button = form.querySelector('button[type="submit"]');
+      if (button) button.disabled = true;
+      try {
+        const { error } = await sb.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: window.location.origin + '/my', shouldCreateUser: true }
+        });
+        if (error) {
+          console.error('SUPABASE OTP ERROR', error);
+          target.textContent = '로그인 메일을 보내지 못했습니다: ' + error.message;
+        } else {
+          target.textContent = '로그인 메일을 보냈습니다. 네이버 메일함과 스팸메일함을 확인해주세요.';
+        }
+      } catch (err) {
+        console.error('LOGIN ERROR', err);
+        target.textContent = '로그인 요청 중 오류가 발생했습니다: ' + (err?.message || err);
+      } finally {
+        if (button) button.disabled = false;
+      }
+    });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+</script>
+
 {% endblock %}
