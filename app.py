@@ -373,6 +373,10 @@ def index(): return render_template('index.html')
 @app.route('/login')
 def login(): return render_template('login.html')
 
+@app.route('/auth/callback')
+def auth_callback():
+    return render_template('auth_callback.html')
+
 @app.route('/saju')
 def saju(): return render_template('saju_form.html')
 
