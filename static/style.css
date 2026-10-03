@@ -12,17 +12,20 @@
 .report-cover h2 strong{color:#fff}
 .report-cover p{margin:0;color:#d8d0c4;font-size:14px;line-height:1.8;max-width:680px}
 #paid-report-content{padding:0 18px 24px}
-.report-toc{display:flex;flex-wrap:wrap;gap:8px;padding:24px 24px 8px}
-.report-toc span{font-size:11px;padding:7px 10px;border:1px solid #e5ded2;border-radius:999px;color:#746a5e;background:#fff}
+.report-toc{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:24px 24px 10px}
+.report-toc-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e7dfd3;border-radius:12px;color:#625b51;background:#fff;text-decoration:none;font-size:12px;transition:.15s}
+.report-toc-item:hover{border-color:#b8a17d;background:#faf6ef}
+.report-toc-item span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:#30291f;color:#fff;font-size:9px;font-weight:800;flex:none}
+.report-section{scroll-margin-top:24px}
 .report-section{position:relative;margin:0;padding:30px 24px;border-bottom:1px solid #ece5da}
 .report-section:last-child{border-bottom:0}
-.report-section h3{font-size:20px;line-height:1.4;margin:0 0 14px;color:#30291f;display:flex;align-items:center;gap:10px}
+.report-section h3{font-size:21px;line-height:1.5;margin:0 0 14px;color:#30291f;display:flex;align-items:center;gap:10px}
 .report-section h3::before{content:counter(report-section, decimal-leading-zero);counter-increment:report-section;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#30291f;color:#fff;font-size:10px;flex:none}
 #paid-report-content{counter-reset:report-section}
-.report-section p{margin:0 0 10px;font-size:14px;line-height:1.9;color:#625b51;word-break:keep-all}
+.report-section p{margin:0 0 13px;font-size:15px;line-height:2.0;color:#625b51;word-break:keep-all}
 .report-section p:last-child{margin-bottom:0}
-.report-section:first-of-type{margin:18px 0 0;padding:30px 28px;border:1px solid #e7ddce;border-radius:18px;background:#f7f2e9}
-.report-section:first-of-type h3{font-size:22px}
+.report-section:first-of-type{margin:18px 0 0;padding:34px 30px;border:1px solid #e7ddce;border-radius:18px;background:#f7f2e9}
+.report-section:first-of-type h3{font-size:23px}
 .report-section:first-of-type h3::before{background:#927b58}
 .report-section:nth-of-type(2){margin-top:14px}
 @media(max-width:600px){
@@ -32,5 +35,7 @@
   #paid-report-content{padding:0 8px 14px}
   .report-section{padding:24px 14px}
   .report-section h3{font-size:18px}
-  .report-section p{font-size:14px;line-height:1.85}
+  .report-toc{grid-template-columns:1fr;padding:18px 12px 6px}
+  .report-section p{font-size:15px;line-height:1.9}
+  .report-section{scroll-margin-top:12px}
 }
