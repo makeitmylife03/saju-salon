@@ -209,8 +209,21 @@ def make_detailed_report(analysis):
     elif daewoon:
         daewoon_text = f"계산된 대운은 {daewoon[0].get('start_year')}년부터 이어지며, 각 10년 구간의 성격을 현재 상황과 함께 비교해보는 방식으로 참고할 수 있습니다."
 
+    pillars = analysis.get('pillars', [])
+    pillar_names = ['년주', '월주', '일주', '시주']
+    pillar_lines = []
+    for idx, pinfo in enumerate(pillars[:4]):
+        if isinstance(pinfo, dict):
+            name = pillar_names[idx] if idx < len(pillar_names) else f'{idx+1}번째 기둥'
+            label = pinfo.get('label_full') or pinfo.get('gan_zhi_label') or ''
+            if label:
+                pillar_lines.append(f'{name}: {label}')
+    pillar_summary = ' / '.join(pillar_lines) if pillar_lines else '사주 원국의 세부 기둥 정보'
+    balance = f'오행 분포는 {count_text}이며, 상대적으로 강하게 나타난 쪽은 {strongest}, 적게 나타난 쪽은 {weakest}입니다.'
+
     return {
         '한눈에 보는 핵심': f"{day} · {elem} 기운을 중심으로 보면, {p['core']}\n\n현재 사주에서 가장 눈에 띄는 {strongest} 기운은 '{labels[strongest]}' 쪽으로 읽을 수 있고, 상대적으로 적은 {weakest} 기운은 '{labels[weakest]}' 영역을 의식적으로 보완할 때 참고가 됩니다.",
+        '내 사주의 구조': f"사주의 네 기둥은 {pillar_summary}로 계산됩니다. 복잡한 한자를 외우는 것보다 각 기둥이 보여주는 역할과 전체 균형을 함께 보는 것이 중요합니다. {balance}\n\n일간은 {day}으로, 전통적인 해석에서는 나 자신을 나타내는 중심축으로 봅니다. 따라서 {elem}의 성향인 {p['theme']}이 기본적인 판단과 행동 방식에 영향을 주는 것으로 해석할 수 있습니다. 다만 하나의 요소만으로 사람 전체를 단정하지 않고 전체 오행의 균형과 실제 생활을 함께 참고하는 것이 좋습니다.",
         '타고난 성향': f"{p['core']} {p['shadow']}\n\n특히 이 성향은 사람을 대할 때와 혼자 판단할 때 차이가 날 수 있습니다. 겉으로 보이는 행동만 보면 단순해 보이지만 실제 선택 과정에서는 자신의 기준과 여러 조건을 함께 따져보는 편으로 볼 수 있습니다. 그래서 본인을 이해할 때 '나는 왜 이러지?'라고 단순화하기보다 어떤 상황에서 에너지가 올라가고 떨어지는지를 보는 것이 더 유용합니다.",
         '돈과 재물': f"{p['money']}\n\n오행 분포상 {strongest} 기운이 상대적으로 강하게 나타나기 때문에 돈을 다룰 때도 '{labels[strongest]}' 성향이 개입하기 쉽습니다. 반대로 {weakest} 기운은 상대적으로 약하게 나타나므로 그 영역을 보완하는 규칙을 따로 만드는 것이 좋습니다. 예를 들어 큰돈을 결정할 때는 감정과 별개로 예산 상한선, 보류 기간, 고정비 기준을 정해두면 판단의 흔들림을 줄일 수 있습니다.\n\n중요한 것은 '돈복이 있다/없다'보다 내가 돈을 벌고 지키는 과정에서 어떤 행동을 반복하는지입니다.",
         '직업과 사업': f"{p['work']}\n\n이 사주에서는 {labels[strongest]} 성향을 일에 활용할 때 장점이 커질 가능성이 있습니다. 반대로 {weakest}와 연결된 부분이 부족해지면 일을 시작하거나 유지하는 과정에서 특정 부분이 병목이 될 수 있습니다. 따라서 직업을 선택할 때 직종 이름만 보기보다 '내가 결정권을 얼마나 갖는가', '결과가 얼마나 빨리 보이는가', '사람과 숫자 중 무엇을 더 많이 다루는가'를 기준으로 비교하는 것이 현실적입니다.\n\n사업을 한다면 잘하는 일을 직접 붙잡고 있는 것과 시스템으로 넘기는 일을 구분하는 것이 특히 중요합니다.",
@@ -219,6 +232,7 @@ def make_detailed_report(analysis):
         '내가 조심할 부분': f"{p['advice']}\n\n또 하나는 본인의 강점을 모든 상황에 적용하지 않는 것입니다. 강점도 상황이 바뀌면 과해질 수 있습니다. 빠른 사람이 항상 빨라야 하는 것도 아니고, 책임감이 강한 사람이 모든 일을 책임져야 하는 것도 아닙니다. 내 방식이 효과적인 상황과 그렇지 않은 상황을 구분하는 것이 장기적으로 더 큰 장점이 됩니다.",
         '대운과 시기': f"{daewoon_text}\n\n대운은 10년 단위의 큰 흐름이므로 '올해 무조건 무슨 일이 생긴다'는 식으로 단정하기보다 어떤 주제에 선택이 집중되기 쉬운지를 보는 것이 좋습니다.\n\n현재와 다음 대운의 경계에서는 직업, 돈, 관계처럼 삶의 우선순위가 달라지는 경험을 할 수 있으므로, 중요한 결정을 할 때 현재의 편안함뿐 아니라 3~5년 뒤 유지 가능한지도 함께 비교해보세요.",
         '내 사주를 실제 생활에 적용한다면': f"첫째, {strongest} 기운의 장점을 돈과 일에서 적극적으로 활용하세요. 둘째, {weakest} 기운과 관련된 행동은 의식적으로 보완하세요. 셋째, 관계에서는 감정이 커진 순간 결론을 내리기보다 확인하고 말하는 시간을 가지세요.\n\n이 세 가지를 생활 기준으로 잡으면 사주를 단순한 운세가 아니라 자신의 선택 습관을 점검하는 도구로 활용할 수 있습니다.",
+        '지금 가장 먼저 점검할 5가지': f"1) 돈: 큰 지출이나 투자를 결정할 때 보류 기간을 정해두기.\n2) 일: 내가 직접 해야 하는 일과 다른 사람에게 넘길 일을 구분하기.\n3) 관계: 서운함을 쌓아두기 전에 작은 단위로 말하기.\n4) 결정: 정보 수집을 언제 끝낼지 미리 정하기.\n5) 변화: 3~5년 뒤에도 유지할 수 있는지를 확인하기.\n\n특히 {strongest} 기운은 장점으로 적극 활용하되 과해질 때 나타나는 모습도 함께 체크하는 것이 좋습니다. 상대적으로 적은 {weakest} 기운은 반대 방향의 행동을 의식적으로 연습하는 방식으로 보완할 수 있습니다.",
         '마지막으로': '이 리포트는 전통적인 사주 해석을 바탕으로 자신을 돌아보기 위한 참고 자료입니다. 미래를 확정하거나 특정 사건을 보장하는 예언이 아니며, 실제 선택과 결과는 현실의 조건과 본인의 판단에 따라 달라질 수 있습니다.'
     }
 
@@ -446,7 +460,7 @@ def payment_success():
         if not calculation:
             return render_template('payment_result.html', success=False, message='사주 분석 데이터를 찾을 수 없습니다.'), 500
         report = make_detailed_report(calculation)
-        report['_version'] = 2
+        report['_version'] = 3
         SUPABASE_ADMIN.table('orders').update({'payment_key':payment_key,'status':'PAID','paid_at':'now()'}).eq('order_id', order_id).execute()
         SUPABASE_ADMIN.table('paid_reports').upsert({'reading_id':order['reading_id'],'report':report}, on_conflict='reading_id').execute()
         return redirect(url_for('saved_saju_result', reading_id=order['reading_id']) + '?paid=1')
@@ -495,7 +509,7 @@ def regenerate_report():
             return {'error':'사주 분석 데이터를 찾을 수 없습니다.'}, 500
 
         report = make_detailed_report(calculation)
-        report['_version'] = 2
+        report['_version'] = 3
         SUPABASE_ADMIN.table('paid_reports').upsert(
             {'reading_id': reading_id, 'report': report},
             on_conflict='reading_id'
