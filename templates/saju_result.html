@@ -4,46 +4,60 @@
 
   <div class="eyebrow">YOUR SAJU</div>
   <h1>나의 사주 결과</h1>
-  <p id="reading-meta" class="meta">{% if reading %}{{ reading.birth_date }}{% if reading.birth_time %} · {{ reading.birth_time }}{% endif %}{% else %}결과를 불러오는 중입니다…{% endif %}</p>
+  <p id="reading-meta" class="meta">{% if reading %}{{ reading.birth_date }}{% if reading.birth_time %} · {{ reading.birth_time }}{% endif %}{% endif %}</p>
 
   {% if reading and reading.teaser %}
   <div class="summary teaser-main">
-    <div class="teaser-badge">무료로 먼저 확인해보세요</div>
+    <div class="teaser-badge">무료로 확인한 당신의 성향</div>
     <h2>{{ reading.teaser.headline }}</h2>
     <p class="teaser-intro">{{ reading.teaser.intro }}</p>
+
     {% for card in reading.teaser.cards %}
     <article class="teaser-card">
-      <h3>{{ card.title }}</h3>
-      <p>{{ card.text }}</p>
-      <strong>{{ card.hook }}</strong>
+      <div class="teaser-number">{{ loop.index }}</div>
+      <div>
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.text }}</p>
+        <strong>{{ card.hook }}</strong>
+      </div>
     </article>
     {% endfor %}
-    <div class="teaser-question">“{{ reading.teaser.question }}”</div>
-  </div>
 
-  <div class="summary curiosity-lock">
-    <div class="lock-small">🔒</div>
-    <h2>여기서부터는 당신만의 상세 분석입니다</h2>
-    <p>무료 결과에서 보인 성향이 실제로 <strong>돈 · 직업 · 연애 · 인간관계</strong>에서 어떻게 나타나는지 풀어드립니다.</p>
-    <div class="locked-list">
-      {% for item in reading.teaser.locked_points %}
-      <div>🔒 {{ item }}</div>
-      {% endfor %}
+    <div class="teaser-question">
+      <span>잠깐</span>
+      <b>“{{ reading.teaser.question }}”</b>
+      <p>이 질문에 대한 답은 사주 원국만 보고 단순하게 판단할 수 없습니다. 여러 기운의 관계와 시기까지 함께 봐야 합니다.</p>
     </div>
-    <p class="cta-copy">“나는 왜 이런 패턴을 반복할까?”<br>그 이유가 궁금하다면 상세 리포트에서 확인하세요.</p>
-    <div class="price">9,900원</div>
-    <a class="btn" id="detail-button" href="#">내 상세 사주 읽어보기</a>
   </div>
-  {% else %}
-  <div class="summary">
-    <h2>무료 성향 요약</h2>
-    <div id="summary-list">{% for line in summary %}<div class="summary-line"><b>{{ loop.index }}</b><p>{{ line }}</p></div>{% endfor %}</div>
-  </div>
-  {% endif %}
 
-  {% if reading and reading.pillars %}
+  <div class="summary paid-preview">
+    <div class="preview-top">
+      <span>9,900원 상세 리포트</span>
+      <b>당신에게만 해당하는 해석</b>
+    </div>
+    <h2>여기서부터가 진짜 궁금해지는 부분입니다.</h2>
+    <p class="preview-copy">무료 결과에서 보인 성향이 실제 삶에서는 어떻게 나타나는지, 그리고 왜 그런 패턴이 생기는지를 당신의 사주 기준으로 풀어드립니다.</p>
+
+    <div class="locked-list">
+      <div><b>💰 돈</b><span>돈을 벌고 모으는 방식, 돈이 새기 쉬운 패턴</span></div>
+      <div><b>💼 일</b><span>직장·사업에서 강점이 살아나는 환경</span></div>
+      <div><b>❤️ 관계</b><span>연애와 인간관계에서 반복되기 쉬운 패턴</span></div>
+      <div><b>📅 흐름</b><span>앞으로의 큰 변화와 주목해서 볼 시기</span></div>
+    </div>
+
+    <div class="blur-tease">
+      <p>“당신은 돈 자체보다 <strong>돈을 대하는 방식</strong>에서 중요한 특징이 나타납니다.”</p>
+      <p>“사람 관계에서는 의외로 <strong>혼자 참고 넘기는 패턴</strong>이 나타날 수 있습니다.”</p>
+    </div>
+
+    <p class="cta-copy"><strong>내 이야기 같다면, 왜 그런지까지 확인해보세요.</strong></p>
+    <div class="price">9,900원</div>
+    <a class="btn" id="detail-button" href="#">내 사주 상세 리포트 보기</a>
+    <p class="small-note">한 번 결제하면 이 결과에서 언제든 다시 확인할 수 있습니다.</p>
+  </div>
+
   <details class="technical-details">
-    <summary>사주 계산 정보 보기</summary>
+    <summary>전문 사주 계산 정보 보기</summary>
     <div class="summary">
       <h2>사주 원국</h2>
       <div class="bazi-grid">{% for p in reading.pillars %}<div class="bazi-item"><span>{{ p.label }}</span><strong>{{ p.label_full }}</strong><small>천간 {{ p.gan }} · 지지 {{ p.zhi }} <em>({{ p.pillar }})</em></small></div>{% endfor %}</div>
@@ -53,6 +67,8 @@
     <div class="summary"><h2>십신</h2>{% for x in [('년주',reading.ten_gods.year_gan,reading.ten_gods.year_zhi),('월주',reading.ten_gods.month_gan,reading.ten_gods.month_zhi),('일주',reading.ten_gods.day_gan,reading.ten_gods.day_zhi),('시주',reading.ten_gods.time_gan,reading.ten_gods.time_zhi)] %}<div class="summary-line"><b>{{ x[0] }}</b><p>{{ x[1] }}<br>{{ x[2]|join(' / ') }}</p></div>{% endfor %}</div>
     <div class="summary"><h2>지장간 · 12운성 · 대운</h2>{% for p in reading.pillars %}<div class="summary-line"><b>{{ p.label }}</b><p>{{ p.hidden_stems_label }} · {{ reading.twelve[p.key] }}</p></div>{% endfor %}{% for d in reading.daewoon %}<div class="summary-line"><b>{{ d.gan_zhi_label }}</b><p>{{ d.start_year }}~{{ d.end_year }} · {{ d.start_age }}~{{ d.end_age }}세</p></div>{% endfor %}</div>
   </details>
+  {% else %}
+  <div class="summary"><h2>무료 성향 요약</h2><div id="summary-list">{% for line in summary %}<div class="summary-line"><b>{{ loop.index }}</b><p>{{ line }}</p></div>{% endfor %}</div></div>
   {% endif %}
 
   <div id="paid-report" class="paid-report hidden"><h2>상세 사주 리포트</h2><div id="paid-report-content"></div></div>
