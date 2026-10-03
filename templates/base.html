@@ -9,7 +9,8 @@
   <script>
     window.SAJU_CONFIG = {
       url: {{ supabase_url|tojson }},
-      key: {{ supabase_publishable_key|tojson }}
+      key: {{ supabase_publishable_key|tojson }},
+      tossClientKey: {{ toss_client_key|tojson }}
     };
   </script>
   <script defer src="{{ url_for('static', filename='app.js') }}"></script>
