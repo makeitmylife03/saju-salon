@@ -140,8 +140,31 @@
     const { data: orders, error: orderError } = await sb.from('orders').select('reading_id,status').eq('reading_id', readingId).eq('status','PAID').limit(1);
     if (orderError) console.error('ORDER CHECK ERROR', orderError);
     if (orders?.length) {
-      const { data: report, error: reportError } = await sb.from('paid_reports').select('report').eq('reading_id', readingId).single();
+      let { data: report, error: reportError } = await sb.from('paid_reports').select('report').eq('reading_id', readingId).single();
       if (reportError) console.error('PAID REPORT ERROR', reportError);
+
+      // 이전에 생성된 짧은 리포트가 저장되어 있으면 새 상세 리포트로 한 번만 갱신합니다.
+      if (report?.report && Number(report.report._version || 0) < 2) {
+        try {
+          const refresh = await fetch('/payment/regenerate-report', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + session.access_token
+            },
+            body: JSON.stringify({ reading_id: readingId })
+          });
+          const refreshed = await refresh.json();
+          if (refresh.ok && refreshed.report) {
+            report = { report: refreshed.report };
+          } else {
+            console.error('REPORT REGENERATE ERROR', refreshed);
+          }
+        } catch (e) {
+          console.error('REPORT REGENERATE REQUEST ERROR', e);
+        }
+      }
+
       if (report?.report) {
         $('#locked-report').classList.add('hidden');
         $('#paid-report').classList.remove('hidden');
@@ -156,7 +179,13 @@
     const r = report || {};
     const sections = Object.entries(r);
     if (!sections.length) return '<p>상세 리포트가 준비 중입니다.</p>';
-    return sections.map(([k,v]) => `<article class="report-section"><h3>${escapeHtml(k)}</h3><p>${escapeHtml(typeof v === 'string' ? v : JSON.stringify(v))}</p></article>`).join('');
+    return sections
+      .filter(([k]) => k !== '_version')
+      .map(([k,v]) => {
+        const text = escapeHtml(typeof v === 'string' ? v : JSON.stringify(v));
+        const paragraphs = text.split(/\\n\\n|\\n/).filter(Boolean).map(p => '<p>' + p + '</p>').join('');
+        return '<article class="report-section"><h3>' + escapeHtml(k) + '</h3>' + paragraphs + '</article>';
+      }).join('');
   }
 
   async function loadCheckout() {
