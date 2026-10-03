@@ -151,6 +151,64 @@
     return sections.map(([k,v]) => `<article class="report-section"><h3>${escapeHtml(k)}</h3><p>${escapeHtml(typeof v === 'string' ? v : JSON.stringify(v))}</p></article>`).join('');
   }
 
+  async function loadCheckout() {
+    const box = $('#checkout');
+    if (!box) return;
+    const button = $('#pay-button');
+    const target = $('#checkout-message');
+    const readingId = box.dataset.readingId;
+    const productName = box.dataset.productName || '사주 상세 리포트';
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      msg(target, '로그인 후 결제할 수 있습니다.');
+      if (button) {
+        button.textContent = '로그인하기';
+        button.onclick = () => { location.href = '/login'; };
+      }
+      return;
+    }
+
+    if (!cfg.tossClientKey || !window.TossPayments) {
+      msg(target, '토스 결제 설정이 아직 완료되지 않았습니다.');
+      return;
+    }
+
+    button?.addEventListener('click', async () => {
+      button.disabled = true;
+      msg(target, '결제창을 준비하고 있습니다...', true);
+      try {
+        const orderResponse = await fetch('/payment/create-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + session.access_token
+          },
+          body: JSON.stringify({ reading_id: readingId })
+        });
+        const order = await orderResponse.json();
+        if (!orderResponse.ok) throw new Error(order.error || '주문 생성에 실패했습니다.');
+
+        const tossPayments = TossPayments(cfg.tossClientKey);
+        const payment = tossPayments.payment({ customerKey: crypto.randomUUID() });
+
+        await payment.requestPayment({
+          method: 'CARD',
+          amount: { value: order.amount, currency: 'KRW' },
+          orderId: order.order_id,
+          orderName: productName,
+          customerEmail: session.user.email || undefined,
+          successUrl: window.location.origin + '/payment/success',
+          failUrl: window.location.origin + '/payment/fail'
+        });
+      } catch (error) {
+        console.error('TOSS PAYMENT ERROR', error);
+        msg(target, error?.message || '결제를 시작하지 못했습니다.');
+        button.disabled = false;
+      }
+    });
+  }
+
   async function loadMy() {
     const box = $('#my-readings'); if (!box) return;
     const auth = $('#my-auth');
@@ -170,6 +228,7 @@
     await refreshNav();
     await loginForm();
     await loadMy();
+    await loadCheckout();
     await loadResultPage();
   }
   init();
