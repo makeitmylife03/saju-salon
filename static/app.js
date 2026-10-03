@@ -74,9 +74,7 @@
         birth_date: birthDate,
         birth_time: birthTime,
         gender,
-        free_summary: calculation.teaser?.cards
-          ? calculation.teaser.cards.map(card => card.text)
-          : []
+        free_summary: { summary: calculation.summary || [], teaser: calculation.teaser || {}, calculation }
       }).select('id').single();
 
       if (error) {
@@ -96,6 +94,25 @@
 
     if (readingId) await configureResult(readingId);
   }
+
+  function renderSavedTeaser(teaser) {
+    const page = $('#result-page');
+    const anchor = $('.technical-details');
+    if (!page || !teaser || !anchor) return;
+    const cards = (teaser.cards || []).map((card, i) =>
+      `<article class="teaser-card"><div class="teaser-number">${i+1}</div><div><h3>${escapeHtml(card.title)}</h3><p>${escapeHtml(card.text)}</p><strong>${escapeHtml(card.hook)}</strong></div></article>`
+    ).join('');
+    const locked = (teaser.locked_points || []).map(x => `<div>🔒 ${escapeHtml(x)}</div>`).join('');
+    anchor.insertAdjacentHTML('beforebegin', `
+      <div class="summary teaser-main">
+        <div class="teaser-badge">무료로 확인한 당신의 성향</div>
+        <h2>${escapeHtml(teaser.headline || '')}</h2>
+        <p class="teaser-intro">${escapeHtml(teaser.intro || '')}</p>
+        ${cards}
+        <div class="teaser-question"><span>잠깐</span><b>“${escapeHtml(teaser.question || '')}”</b><p>이 질문에 대한 답은 여러 기운의 관계와 시기까지 함께 봐야 합니다.</p></div>
+      </div>
+    `);
+  }
   async function configureResult(readingId) {
     const resultMsg = $('#result-message');
     const { data: { session } } = await sb.auth.getSession();
@@ -107,7 +124,12 @@
     const { data: reading, error } = await sb.from('readings').select('id,birth_date,birth_time,gender,free_summary').eq('id', readingId).single();
     if (error || !reading) { msg(resultMsg, '결과를 찾을 수 없습니다.'); return; }
     $('#reading-meta').textContent = reading.birth_date + (reading.birth_time ? ' · ' + reading.birth_time : '');
-    $('#summary-list').innerHTML = (reading.free_summary || []).map((line, i) => `<div class="summary-line"><b>${i+1}</b><p>${escapeHtml(line)}</p></div>`).join('');
+    const saved = reading.free_summary || {};
+    if (Array.isArray(saved)) {
+      $('#summary-list').innerHTML = saved.map((line, i) => `<div class="summary-line"><b>${i+1}</b><p>${escapeHtml(line)}</p></div>`).join('');
+    } else if (saved.teaser) {
+      renderSavedTeaser(saved.teaser);
+    }
 
     const { data: orders } = await sb.from('orders').select('reading_id,status').eq('reading_id', readingId).eq('status','PAID').limit(1);
     if (orders?.length) {
