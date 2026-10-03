@@ -177,15 +177,15 @@
 
   function renderReport(report) {
     const r = report || {};
-    const sections = Object.entries(r);
+    const sections = Object.entries(r).filter(([k]) => k !== '_version');
     if (!sections.length) return '<p>상세 리포트가 준비 중입니다.</p>';
-    return sections
-      .filter(([k]) => k !== '_version')
-      .map(([k,v]) => {
-        const text = escapeHtml(typeof v === 'string' ? v : JSON.stringify(v));
-        const paragraphs = text.split(/\\n\\n|\\n/).filter(Boolean).map(p => '<p>' + p + '</p>').join('');
-        return '<article class="report-section"><h3>' + escapeHtml(k) + '</h3>' + paragraphs + '</article>';
-      }).join('');
+    const toc = sections.slice(0, 8).map(([k]) => '<span>' + escapeHtml(k) + '</span>').join('');
+    const body = sections.map(([k,v]) => {
+      const text = escapeHtml(typeof v === 'string' ? v : JSON.stringify(v));
+      const paragraphs = text.split(/\\n\\n|\\n/).filter(Boolean).map(p => '<p>' + p + '</p>').join('');
+      return '<article class="report-section"><h3>' + escapeHtml(k) + '</h3>' + paragraphs + '</article>';
+    }).join('');
+    return '<div class="report-toc">' + toc + '</div>' + body;
   }
 
   async function loadCheckout() {
