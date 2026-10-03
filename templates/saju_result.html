@@ -55,7 +55,9 @@
     <div class="price">9,900원</div>
     <a class="btn" id="detail-button" href="#">내 사주 상세 리포트 보기</a>
     <p class="small-note">결제 후 이 결과 페이지에서 언제든 다시 확인할 수 있습니다.</p>
-  </div>\n\n  <details class="technical-details">
+  </div>
+
+  <details class="technical-details">
     <summary>전문 사주 계산 정보 보기</summary>
     <div class="summary">
       <h2>사주 원국</h2>
@@ -83,7 +85,14 @@
   </div>
   {% endif %}
 
-  <div id="paid-report" class="paid-report hidden"><h2>상세 사주 리포트</h2><div id="paid-report-content"></div></div>
+  <section id="paid-report" class="paid-report hidden">
+  <div class="report-cover">
+    <div class="report-kicker">PERSONAL SAJU REPORT</div>
+    <h2>당신의 사주를 깊이 들여다보는<br><strong>개인 맞춤 리포트</strong></h2>
+    <p>단순한 운세가 아니라, 타고난 성향이 돈·일·관계·선택에 어떻게 연결되는지를 풀어봅니다.</p>
+  </div>
+  <div id="paid-report-content"></div>
+</section>
   <div id="result-message" class="notice"></div>
 </section>
 {% endblock %}
