@@ -97,21 +97,27 @@
 
   function renderSavedTeaser(teaser) {
     const page = $('#result-page');
-    const anchor = $('.technical-details');
-    if (!page || !teaser || !anchor) return;
+    if (!page || !teaser) return;
     const cards = (teaser.cards || []).map((card, i) =>
       `<article class="teaser-card"><div class="teaser-number">${i+1}</div><div><h3>${escapeHtml(card.title)}</h3><p>${escapeHtml(card.text)}</p><strong>${escapeHtml(card.hook)}</strong></div></article>`
     ).join('');
-    const locked = (teaser.locked_points || []).map(x => `<div>🔒 ${escapeHtml(x)}</div>`).join('');
-    anchor.insertAdjacentHTML('beforebegin', `
+    const html = `
       <div class="summary teaser-main">
         <div class="teaser-badge">무료로 확인한 당신의 성향</div>
         <h2>${escapeHtml(teaser.headline || '')}</h2>
         <p class="teaser-intro">${escapeHtml(teaser.intro || '')}</p>
         ${cards}
         <div class="teaser-question"><span>잠깐</span><b>“${escapeHtml(teaser.question || '')}”</b><p>이 질문에 대한 답은 여러 기운의 관계와 시기까지 함께 봐야 합니다.</p></div>
-      </div>
-    `);
+      </div>`;
+    const anchor = $('.technical-details');
+    if (anchor) anchor.insertAdjacentHTML('beforebegin', html);
+    else {
+      const list = $('#summary-list');
+      if (list) {
+        const wrapper = list.closest('.summary');
+        if (wrapper) wrapper.outerHTML = html;
+      }
+    }
   }
   async function configureResult(readingId) {
     const resultMsg = $('#result-message');
@@ -131,9 +137,11 @@
       renderSavedTeaser(saved.teaser);
     }
 
-    const { data: orders } = await sb.from('orders').select('reading_id,status').eq('reading_id', readingId).eq('status','PAID').limit(1);
+    const { data: orders, error: orderError } = await sb.from('orders').select('reading_id,status').eq('reading_id', readingId).eq('status','PAID').limit(1);
+    if (orderError) console.error('ORDER CHECK ERROR', orderError);
     if (orders?.length) {
-      const { data: report } = await sb.from('paid_reports').select('report').eq('reading_id', readingId).single();
+      const { data: report, error: reportError } = await sb.from('paid_reports').select('report').eq('reading_id', readingId).single();
+      if (reportError) console.error('PAID REPORT ERROR', reportError);
       if (report?.report) {
         $('#locked-report').classList.add('hidden');
         $('#paid-report').classList.remove('hidden');
