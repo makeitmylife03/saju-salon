@@ -22,6 +22,8 @@
     if (!location.pathname.startsWith('/auth/callback')) return;
     const params = new URLSearchParams(location.search);
     const code = params.get('code');
+    const tokenHash = params.get('token_hash');
+    const type = params.get('type') || 'magiclink';
     const errorDescription = params.get('error_description');
     if (errorDescription) {
       document.body.innerHTML = '<main><section class="card"><h1>로그인에 실패했습니다</h1><p>' + escapeHtml(errorDescription) + '</p><a class="btn" href="/login">다시 로그인하기</a></section></main>';
@@ -31,6 +33,13 @@
       const { error } = await sb.auth.exchangeCodeForSession(code);
       if (error) {
         console.error('AUTH CODE EXCHANGE ERROR', error);
+        document.body.innerHTML = '<main><section class="card"><h1>로그인 인증에 실패했습니다</h1><p>' + escapeHtml(error.message) + '</p><a class="btn" href="/login">다시 로그인하기</a></section></main>';
+        return;
+      }
+    } else if (tokenHash) {
+      const { error } = await sb.auth.verifyOtp({ token_hash: tokenHash, type });
+      if (error) {
+        console.error('AUTH OTP VERIFY ERROR', error);
         document.body.innerHTML = '<main><section class="card"><h1>로그인 인증에 실패했습니다</h1><p>' + escapeHtml(error.message) + '</p><a class="btn" href="/login">다시 로그인하기</a></section></main>';
         return;
       }
