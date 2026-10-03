@@ -19,7 +19,8 @@
   function escapeHtml(v) { return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
   async function loginForm() {
-    const form = $('#login-form'); if (!form) return;
+    const form = $('#login-form'); if (!form || form.dataset.loginBound === 'true') return;
+    form.dataset.loginBound = 'true';
     const button = form.querySelector('button[type="submit"]');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
