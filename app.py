@@ -63,6 +63,32 @@ def ten_god_label(value):
     desc = TEN_GOD_DESC.get(kr, '')
     return f'{kr} · {desc}' if desc else kr
 
+def make_teaser(analysis):
+    day = analysis['day_master_label']
+    elem = analysis['day_master_element']
+    strongest = max(analysis['element_counts'], key=analysis['element_counts'].get)
+    weakest = min(analysis['element_counts'], key=analysis['element_counts'].get)
+    day_words = {
+        '목': ('성장 욕구가 강하고, 한번 방향을 잡으면 스스로 길을 만들어가려는 면','사람과 환경의 변화에 민감하게 반응하면서도 결국 자기 방식으로 정리하려는 면'),
+        '화': ('표현력과 추진력이 살아 있고, 분위기를 움직이려는 면','마음이 움직이면 빠르게 행동하지만 관심이 식으면 속도가 크게 달라질 수 있는 면'),
+        '토': ('현실감각과 안정감을 중요하게 보고, 쉽게 흔들리지 않으려는 면','겉으로는 차분해 보여도 책임져야 할 일이 생기면 혼자 짊어지려는 면'),
+        '금': ('기준이 분명하고, 사람이나 일을 볼 때 핵심을 빠르게 잡으려는 면','대충 넘어가기보다 스스로 납득할 만한 기준을 세우려는 면'),
+        '수': ('상황을 읽는 힘과 유연함이 있고, 여러 가능성을 생각하는 면','겉으로 드러내기 전에 혼자 생각을 충분히 정리하려는 면')
+    }
+    strongest_words = {'목':'새로운 기회나 변화가 생겼을 때 움직이려는 힘','화':'표현하고 행동으로 옮기는 힘','토':'현실적으로 안정시키고 관리하는 힘','금':'기준을 세우고 선택하는 힘','수':'정보를 모으고 상황에 맞게 움직이는 힘'}
+    weak_words = {'목':'새로운 시작과 장기적인 성장','화':'표현과 실행','토':'안정과 현실적인 정리','금':'선택과 기준','수':'유연한 대응과 생각의 전환'}
+    return {
+        'headline': f'{day} · {elem} 기운에서 눈에 띄는 두 가지',
+        'intro': f'사주 해석의 관점에서 보면, 당신은 {day_words[elem][0]}이 눈에 띕니다.',
+        'cards': [
+            {'title':'① 겉으로 보이는 모습과 속마음','text':f'{day_words[elem][1]}이 함께 나타날 수 있습니다. 그래서 주변에서는 당신을 한 가지 모습으로만 보기 어려울 수 있어요.','hook':'그런데 이 성향이 가까운 사람과의 관계에서는 어떻게 나타날까요?'},
+            {'title':'② 돈과 일에서 반복될 수 있는 패턴','text':f'원국에서는 {strongest_words[strongest]}이 비교적 두드러집니다. 이것을 잘 활용하면 강점이 될 수 있지만, 과해질 때 나타나는 패턴도 함께 살펴볼 필요가 있습니다.','hook':'특히 돈을 벌고 쓰는 방식에서 어떤 모습으로 나타나는지는 상세 분석에서 더 구체적으로 볼 수 있어요.'},
+            {'title':'③ 지금 당신에게 필요한 균형','text':f'{weak_words[weakest]}과 관련된 기운이 상대적으로 적게 나타납니다. 단순히 좋고 나쁜 문제가 아니라, 어떤 상황에서 이 부분이 약점처럼 느껴질 수 있는지를 보는 게 중요합니다.','hook':'이 부분이 직업·연애·재물운에서 어떻게 연결되는지가 핵심입니다.'}
+        ],
+        'question':'당신의 사주에는 왜 이런 패턴이 나타날까요?',
+        'locked_points':['돈을 벌고 모으는 방식','직업·사업에서 강점이 살아나는 환경','연애와 인간관계에서 반복되는 패턴','앞으로 10년 단위 흐름에서 주목할 시기']
+    }
+
 def calculate_saju(birth_date, birth_time, gender):
     if not birth_date:
         raise ValueError('생년월일을 입력해주세요.')
@@ -158,7 +184,7 @@ def calculate_saju(birth_date, birth_time, gender):
             'wuxing':wuxing,'element_counts':counts,'day_master':day_master,
             'day_master_element':day_master_element,'day_master_label':gan_label(day_master),
             'ten_gods':ten_gods,'na_yin':na_yin,'twelve':twelve,'extra':extra,
-            'daewoon':daewoon,'summary':summary
+            'daewoon':daewoon,'summary':summary,'teaser':make_teaser({'day_master_label':gan_label(day_master),'day_master_element':day_master_element,'element_counts':counts})
         }
 
     except Exception as exc:
