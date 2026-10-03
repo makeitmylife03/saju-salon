@@ -446,12 +446,64 @@ def payment_success():
         if not calculation:
             return render_template('payment_result.html', success=False, message='사주 분석 데이터를 찾을 수 없습니다.'), 500
         report = make_detailed_report(calculation)
+        report['_version'] = 2
         SUPABASE_ADMIN.table('orders').update({'payment_key':payment_key,'status':'PAID','paid_at':'now()'}).eq('order_id', order_id).execute()
         SUPABASE_ADMIN.table('paid_reports').upsert({'reading_id':order['reading_id'],'report':report}, on_conflict='reading_id').execute()
         return redirect(url_for('saved_saju_result', reading_id=order['reading_id']) + '?paid=1')
     except Exception as exc:
         print('PAYMENT SUCCESS ERROR:', repr(exc))
         return render_template('payment_result.html', success=False, message='결제 처리 중 오류가 발생했습니다.'), 500
+
+@app.post('/payment/regenerate-report')
+def regenerate_report():
+    try:
+        _require_supabase_admin()
+        auth = request.headers.get('Authorization', '')
+        if not auth.startswith('Bearer '):
+            return {'error':'로그인이 필요합니다.'}, 401
+        user = _get_supabase_user(auth.split(' ', 1)[1])
+        if not user or not user.get('id'):
+            return {'error':'로그인 세션이 유효하지 않습니다.'}, 401
+        payload = request.get_json(silent=True) or {}
+        reading_id = str(payload.get('reading_id', '')).strip()
+        if not reading_id:
+            return {'error':'결과를 찾을 수 없습니다.'}, 400
+
+        order_res = (
+            SUPABASE_ADMIN.table('orders')
+            .select('id,reading_id,status,user_id')
+            .eq('reading_id', reading_id)
+            .eq('user_id', user['id'])
+            .eq('status', 'PAID')
+            .limit(1)
+            .execute()
+        )
+        if not order_res.data:
+            return {'error':'결제된 리포트를 찾을 수 없습니다.'}, 403
+
+        reading_res = (
+            SUPABASE_ADMIN.table('readings')
+            .select('id,free_summary')
+            .eq('id', reading_id)
+            .eq('user_id', user['id'])
+            .single()
+            .execute()
+        )
+        saved = (reading_res.data or {}).get('free_summary') or {}
+        calculation = saved.get('calculation') if isinstance(saved, dict) else None
+        if not calculation:
+            return {'error':'사주 분석 데이터를 찾을 수 없습니다.'}, 500
+
+        report = make_detailed_report(calculation)
+        report['_version'] = 2
+        SUPABASE_ADMIN.table('paid_reports').upsert(
+            {'reading_id': reading_id, 'report': report},
+            on_conflict='reading_id'
+        ).execute()
+        return {'ok': True, 'report': report}
+    except Exception as exc:
+        print('REGENERATE REPORT ERROR:', repr(exc))
+        return {'error':'상세 리포트 갱신 중 오류가 발생했습니다.'}, 500
 
 @app.get('/payment/fail')
 def payment_fail():
