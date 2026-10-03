@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="card">
+  <div class="eyebrow">SAJU READING</div>
+  <h1>사주 정보 입력</h1>
+  <p class="muted">무료 성향 3줄을 먼저 확인한 뒤, 원하면 상세 리포트를 구매할 수 있습니다.</p>
+  <form method="post" action="{{ url_for('saju_result') }}">
+    <label>생년월일<input type="date" name="birth_date" required></label>
+    <label>출생시간<input type="time" name="birth_time"></label>
+    <label>성별<select name="gender"><option value="female">여성</option><option value="male">남성</option><option value="other">선택 안 함</option></select></label>
+    <button class="btn" type="submit">무료 결과 보기</button>
+  </form>
+</section>
+{% endblock %}

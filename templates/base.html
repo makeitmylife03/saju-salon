@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>사주살롱</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    window.SAJU_CONFIG = {
+      url: {{ supabase_url|tojson }},
+      key: {{ supabase_publishable_key|tojson }}
+    };
+  </script>
+  <script defer src="{{ url_for('static', filename='app.js') }}"></script>
+</head>
+<body>
+<header class="topbar">
+  <a href="{{ url_for('index') }}" class="brand">사주살롱</a>
+  <nav>
+    <a href="{{ url_for('saju') }}">사주</a>
+    <a href="{{ url_for('my_page') }}">내 결과</a>
+    <span id="auth-nav"><a href="{{ url_for('login') }}">로그인</a></span>
+  </nav>
+</header>
+<main>{% block content %}{% endblock %}</main>
+</body>
+</html>

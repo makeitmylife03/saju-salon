@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<section class="result" id="result-page" data-reading-id="{{ reading_id or '' }}" data-fresh="{{ 'true' if fresh else 'false' }}" data-birth-date="{{ reading.birth_date if reading else '' }}" data-birth-time="{{ reading.birth_time if reading else '' }}" data-gender="{{ reading.gender if reading else '' }}">
+  <div class="eyebrow">YOUR SAJU</div>
+  <h1>나의 사주 결과</h1>
+  <p id="reading-meta" class="meta">
+    {% if reading %}{{ reading.birth_date }}{% if reading.birth_time %} · {{ reading.birth_time }}{% endif %}{% else %}결과를 불러오는 중입니다…{% endif %}
+  </p>
+
+  <div class="summary">
+    <h2>무료 성향 요약</h2>
+    <div id="summary-list">
+      {% for line in summary %}<div class="summary-line"><b>{{ loop.index }}</b><p>{{ line }}</p></div>{% endfor %}
+    </div>
+  </div>
+
+  <div class="locked" id="locked-report">
+    <div class="lock">🔒</div>
+    <h2>상세 사주 리포트</h2>
+    <div class="blurred"><p>타고난 기질과 오행의 균형을 바탕으로 한 상세 성향 분석입니다.</p><p>재물운, 직업운, 연애운, 인간관계와 앞으로의 흐름까지 자세히 분석합니다.</p><p>중요한 시기와 주의할 점, 현실적인 행동 방향을 함께 정리합니다.</p></div>
+    <div class="price">9,900원</div>
+    <a class="btn" id="detail-button" href="#">상세 리포트 보기</a>
+  </div>
+
+  <div class="paid-report hidden" id="paid-report">
+    <h2>상세 사주 리포트</h2>
+    <div id="paid-report-content"></div>
+  </div>
+
+  <div id="result-message" class="notice"></div>
+</section>
+{% endblock %}
