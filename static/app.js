@@ -49,28 +49,53 @@
     const resultMsg = $('#result-message');
 
     if (fresh) {
-      // Ask the browser to persist the form result. The actual form data is embedded in data-* attributes.
       const birthDate = page.dataset.birthDate;
       const birthTime = page.dataset.birthTime || null;
       const gender = page.dataset.gender || null;
       const { data: { session } } = await sb.auth.getSession();
+
       if (!session) {
         msg(resultMsg, '무료 결과는 확인할 수 있습니다. 결과를 저장하려면 먼저 로그인해주세요.');
         const btn = $('#detail-button');
-        btn.href = '/login'; btn.textContent = '로그인하고 결과 저장하기';
+        if (btn) { btn.href = '/login'; btn.textContent = '로그인하고 결과 저장하기'; }
         return;
       }
-      const summary = Array.from(document.querySelectorAll('#summary-list .summary-line p')).map(x => x.textContent);
-      const { data, error } = await sb.from('readings').insert({ user_id: session.user.id, birth_date: birthDate, birth_time: birthTime, gender, free_summary: summary }).select('id').single();
-      if (error) { msg(resultMsg, '결과 저장에 실패했습니다: ' + error.message); return; }
+
+      let calculation = {};
+      try {
+        const raw = $('#saju-reading-data')?.textContent;
+        calculation = raw ? JSON.parse(raw) : {};
+      } catch (e) {
+        console.error('SAJU DATA PARSE ERROR', e);
+      }
+
+      const { data, error } = await sb.from('readings').insert({
+        user_id: session.user.id,
+        birth_date: birthDate,
+        birth_time: birthTime,
+        gender,
+        free_summary: calculation.teaser?.cards
+          ? calculation.teaser.cards.map(card => card.text)
+          : []
+      }).select('id').single();
+
+      if (error) {
+        msg(resultMsg, '결과 저장에 실패했습니다: ' + error.message);
+        return;
+      }
+
       page.dataset.readingId = data.id;
       page.dataset.fresh = 'false';
-      await configureResult(data.id);
+
+      const btn = $('#detail-button');
+      if (btn) btn.href = '/checkout/' + encodeURIComponent(data.id);
+
+      msg(resultMsg, '이 결과는 내 결과에 자동으로 저장되었습니다.', true);
       return;
     }
+
     if (readingId) await configureResult(readingId);
   }
-
   async function configureResult(readingId) {
     const resultMsg = $('#result-message');
     const { data: { session } } = await sb.auth.getSession();
