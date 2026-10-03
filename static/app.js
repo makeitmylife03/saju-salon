@@ -20,35 +20,48 @@
 
   async function handleAuthCallback() {
     if (!location.pathname.startsWith('/auth/callback')) return;
+
     const params = new URLSearchParams(location.search);
+    const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
     const code = params.get('code');
     const tokenHash = params.get('token_hash');
-    const type = params.get('type') || 'magiclink';
+    const type = params.get('type') || 'email';
     const errorDescription = params.get('error_description');
+
     if (errorDescription) {
       document.body.innerHTML = '<main><section class="card"><h1>로그인에 실패했습니다</h1><p>' + escapeHtml(errorDescription) + '</p><a class="btn" href="/login">다시 로그인하기</a></section></main>';
       return;
     }
-    if (code) {
-      const { error } = await sb.auth.exchangeCodeForSession(code);
-      if (error) {
-        console.error('AUTH CODE EXCHANGE ERROR', error);
-        document.body.innerHTML = '<main><section class="card"><h1>로그인 인증에 실패했습니다</h1><p>' + escapeHtml(error.message) + '</p><a class="btn" href="/login">다시 로그인하기</a></section></main>';
+
+    try {
+      if (code) {
+        const { error } = await sb.auth.exchangeCodeForSession(code);
+        if (error) throw error;
+      } else if (tokenHash) {
+        const { error } = await sb.auth.verifyOtp({ token_hash: tokenHash, type });
+        if (error) throw error;
+      } else if (hash.get('access_token') && hash.get('refresh_token')) {
+        const { error } = await sb.auth.setSession({
+          access_token: hash.get('access_token'),
+          refresh_token: hash.get('refresh_token')
+        });
+        if (error) throw error;
+      }
+
+      // Supabase의 URL 세션 감지가 끝날 시간을 확보합니다.
+      await new Promise(resolve => setTimeout(resolve, 700));
+      const { data: { session } } = await sb.auth.getSession();
+
+      if (session) {
+        history.replaceState({}, document.title, '/auth/callback');
+        location.replace('/my');
         return;
       }
-    } else if (tokenHash) {
-      const { error } = await sb.auth.verifyOtp({ token_hash: tokenHash, type });
-      if (error) {
-        console.error('AUTH OTP VERIFY ERROR', error);
-        document.body.innerHTML = '<main><section class="card"><h1>로그인 인증에 실패했습니다</h1><p>' + escapeHtml(error.message) + '</p><a class="btn" href="/login">다시 로그인하기</a></section></main>';
-        return;
-      }
-    }
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      location.replace('/my');
-    } else {
-      document.body.innerHTML = '<main><section class="card"><h1>로그인 인증을 확인하지 못했습니다</h1><p>메일 링크를 다시 눌러주세요.</p><a class="btn" href="/login">다시 로그인하기</a></section></main>';
+
+      throw new Error('이메일 인증은 완료되었지만 로그인 세션을 만들지 못했습니다. 같은 브라우저에서 새 로그인 메일 링크를 다시 눌러주세요.');
+    } catch (error) {
+      console.error('AUTH CALLBACK ERROR', error);
+      document.body.innerHTML = '<main><section class="card"><h1>로그인 인증에 실패했습니다</h1><p>' + escapeHtml(error?.message || error) + '</p><a class="btn" href="/login">다시 로그인하기</a></section></main>';
     }
   }
 
