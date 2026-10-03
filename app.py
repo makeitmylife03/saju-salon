@@ -1,12 +1,20 @@
 import os
-from flask import Flask, render_template, request
+import base64
+import uuid
+import requests
+from flask import Flask, render_template, request, redirect, url_for
 from lunar_python import Solar
+from supabase import create_client
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'dev-change-me')
 
 SUPABASE_URL = os.getenv('SUPABASE_URL', 'https://bjjqpmkvtmnecekdnzbf.supabase.co')
 SUPABASE_PUBLISHABLE_KEY = os.getenv('SUPABASE_PUBLISHABLE_KEY', '')
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', '')
+TOSS_CLIENT_KEY = os.getenv('TOSS_CLIENT_KEY', '')
+TOSS_SECRET_KEY = os.getenv('TOSS_SECRET_KEY', '')
+SUPABASE_ADMIN = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY) if SUPABASE_SERVICE_ROLE_KEY else None
 
 PRODUCTS = {'saju_detail': {'name': '종합 사주 상세 리포트', 'amount': 9900}}
 
@@ -298,7 +306,7 @@ def calculate_saju(birth_date, birth_time, gender):
 
 @app.context_processor
 def inject_config():
-    return {'supabase_url':SUPABASE_URL,'supabase_publishable_key':SUPABASE_PUBLISHABLE_KEY}
+    return {'supabase_url':SUPABASE_URL,'supabase_publishable_key':SUPABASE_PUBLISHABLE_KEY,'toss_client_key':TOSS_CLIENT_KEY}
 
 @app.route('/')
 def index(): return render_template('index.html')
@@ -335,6 +343,101 @@ def saved_saju_result(reading_id):
 @app.get('/checkout/<reading_id>')
 def checkout(reading_id):
     return render_template('checkout.html',reading_id=reading_id,product=PRODUCTS['saju_detail'])
+
+def _require_supabase_admin():
+    if not SUPABASE_ADMIN:
+        raise RuntimeError('SUPABASE_SERVICE_ROLE_KEY가 Render 환경변수에 없습니다.')
+
+def _get_supabase_user(access_token):
+    response = requests.get(
+        f'{SUPABASE_URL}/auth/v1/user',
+        headers={'apikey': SUPABASE_PUBLISHABLE_KEY, 'Authorization': f'Bearer {access_token}'},
+        timeout=10,
+    )
+    if response.status_code != 200:
+        return None
+    return response.json()
+
+@app.post('/payment/create-order')
+def create_payment_order():
+    try:
+        _require_supabase_admin()
+        auth = request.headers.get('Authorization', '')
+        if not auth.startswith('Bearer '):
+            return {'error':'로그인이 필요합니다.'}, 401
+        user = _get_supabase_user(auth.split(' ', 1)[1])
+        if not user or not user.get('id'):
+            return {'error':'로그인 세션이 유효하지 않습니다.'}, 401
+        payload = request.get_json(silent=True) or {}
+        reading_id = str(payload.get('reading_id', '')).strip()
+        if not reading_id:
+            return {'error':'사주 결과를 찾을 수 없습니다.'}, 400
+        reading_res = SUPABASE_ADMIN.table('readings').select('id,user_id').eq('id', reading_id).eq('user_id', user['id']).single().execute()
+        if not reading_res.data:
+            return {'error':'내 사주 결과만 결제할 수 있습니다.'}, 403
+        order_id = 'SAJU-' + uuid.uuid4().hex
+        product = PRODUCTS['saju_detail']
+        SUPABASE_ADMIN.table('orders').insert({
+            'user_id': user['id'], 'reading_id': reading_id, 'order_id': order_id,
+            'product_name': product['name'], 'amount': product['amount'], 'status': 'READY',
+        }).execute()
+        return {'order_id':order_id,'amount':product['amount'],'product_name':product['name']}
+    except Exception as exc:
+        print('CREATE ORDER ERROR:', repr(exc))
+        return {'error':'주문 생성 중 오류가 발생했습니다.'}, 500
+
+@app.get('/payment/success')
+def payment_success():
+    payment_key = request.args.get('paymentKey', '').strip()
+    order_id = request.args.get('orderId', '').strip()
+    amount_raw = request.args.get('amount', '').strip()
+    try:
+        _require_supabase_admin()
+        if not TOSS_SECRET_KEY:
+            raise RuntimeError('TOSS_SECRET_KEY가 Render 환경변수에 없습니다.')
+        if not payment_key or not order_id or not amount_raw:
+            return render_template('payment_result.html', success=False, message='결제 정보가 올바르지 않습니다.'), 400
+        try:
+            amount = int(amount_raw)
+        except ValueError:
+            return render_template('payment_result.html', success=False, message='결제 금액이 올바르지 않습니다.'), 400
+        order_res = SUPABASE_ADMIN.table('orders').select('*').eq('order_id', order_id).single().execute()
+        order = order_res.data
+        if not order:
+            return render_template('payment_result.html', success=False, message='주문을 찾을 수 없습니다.'), 404
+        expected_amount = PRODUCTS['saju_detail']['amount']
+        if order.get('amount') != expected_amount or amount != expected_amount:
+            return render_template('payment_result.html', success=False, message='결제 금액 검증에 실패했습니다.'), 400
+        if order.get('status') == 'PAID':
+            return redirect(url_for('saved_saju_result', reading_id=order['reading_id']))
+        credential = base64.b64encode((TOSS_SECRET_KEY + ':').encode()).decode()
+        confirm = requests.post(
+            'https://api.tosspayments.com/v1/payments/confirm',
+            headers={'Authorization': f'Basic {credential}', 'Content-Type': 'application/json', 'Idempotency-Key': str(uuid.uuid4())},
+            json={'paymentKey':payment_key,'orderId':order_id,'amount':expected_amount},
+            timeout=20,
+        )
+        if confirm.status_code >= 400:
+            print('TOSS CONFIRM ERROR:', confirm.status_code, confirm.text)
+            return render_template('payment_result.html', success=False, message='결제 승인에 실패했습니다. 잠시 후 다시 시도해주세요.'), 400
+        reading_res = SUPABASE_ADMIN.table('readings').select('id,free_summary').eq('id', order['reading_id']).single().execute()
+        saved = (reading_res.data or {}).get('free_summary') or {}
+        calculation = saved.get('calculation') if isinstance(saved, dict) else None
+        if not calculation:
+            return render_template('payment_result.html', success=False, message='사주 분석 데이터를 찾을 수 없습니다.'), 500
+        report = make_detailed_report(calculation)
+        SUPABASE_ADMIN.table('orders').update({'payment_key':payment_key,'status':'PAID','paid_at':'now()'}).eq('order_id', order_id).execute()
+        SUPABASE_ADMIN.table('paid_reports').upsert({'reading_id':order['reading_id'],'report':report}, on_conflict='reading_id').execute()
+        return redirect(url_for('saved_saju_result', reading_id=order['reading_id']) + '?paid=1')
+    except Exception as exc:
+        print('PAYMENT SUCCESS ERROR:', repr(exc))
+        return render_template('payment_result.html', success=False, message='결제 처리 중 오류가 발생했습니다.'), 500
+
+@app.get('/payment/fail')
+def payment_fail():
+    message = request.args.get('message', '결제가 취소되었거나 완료되지 않았습니다.')
+    return render_template('payment_result.html', success=False, message=message)
+
 
 @app.route('/my')
 def my_page(): return render_template('my.html')
