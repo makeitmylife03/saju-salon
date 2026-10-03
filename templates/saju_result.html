@@ -68,6 +68,19 @@
   </details>
   {% else %}
   <div class="summary"><h2>무료 성향 요약</h2><div id="summary-list">{% for line in summary %}<div class="summary-line"><b>{{ loop.index }}</b><p>{{ line }}</p></div>{% endfor %}</div></div>
+  <div class="summary paid-preview" id="locked-report">
+    <div class="preview-top"><span>9,900원 상세 리포트</span><b>당신의 사주를 기준으로 분석</b></div>
+    <h2>무료 결과에서 끝내기엔<br>조금 아쉬운 이유가 있습니다.</h2>
+    <p class="preview-copy">돈·일·관계·시기까지 연결해서 더 자세히 확인할 수 있습니다.</p>
+    <div class="locked-list">
+      <div><b>💰 돈</b><span>돈을 벌 때 강해지는 방식과 반복되는 패턴</span></div>
+      <div><b>💼 일</b><span>직장과 사업에서 장점이 살아나는 환경</span></div>
+      <div><b>❤️ 관계</b><span>연애와 인간관계에서 반복되기 쉬운 모습</span></div>
+      <div><b>📅 시기</b><span>변화가 커지는 시기와 흐름</span></div>
+    </div>
+    <div class="price">9,900원</div>
+    <a class="btn" id="detail-button" href="#">내 사주 상세 리포트 보기</a>
+  </div>
   {% endif %}
 
   <div id="paid-report" class="paid-report hidden"><h2>상세 사주 리포트</h2><div id="paid-report-content"></div></div>
