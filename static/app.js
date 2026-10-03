@@ -20,15 +20,44 @@
 
   async function loginForm() {
     const form = $('#login-form'); if (!form) return;
+    const button = form.querySelector('button[type="submit"]');
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = $('#login-email').value.trim();
+      e.stopPropagation();
+      const email = $('#login-email')?.value.trim();
       const target = $('#login-message');
-      const { error } = await sb.auth.signInWithOtp({
-        email,
-        options: { emailRedirectTo: window.location.origin + '/my' }
-      });
-      msg(target, error ? error.message : '로그인 링크를 이메일로 보냈습니다. 메일에서 링크를 눌러주세요.', !error);
+      if (!email) {
+        msg(target, '이메일 주소를 입력해주세요.');
+        return;
+      }
+      if (button) {
+        button.disabled = true;
+        button.textContent = '로그인 메일 보내는 중...';
+      }
+      msg(target, '로그인 요청을 보내고 있습니다...', true);
+      try {
+        const result = await sb.auth.signInWithOtp({
+          email,
+          options: {
+            emailRedirectTo: window.location.origin + '/my',
+            shouldCreateUser: true
+          }
+        });
+        if (result.error) {
+          console.error('SUPABASE OTP ERROR', result.error);
+          msg(target, '로그인 메일을 보내지 못했습니다: ' + (result.error.message || '알 수 없는 오류'));
+          return;
+        }
+        msg(target, '로그인 메일을 보냈습니다. 네이버 메일함과 스팸메일함을 확인해주세요.', true);
+      } catch (error) {
+        console.error('LOGIN REQUEST ERROR', error);
+        msg(target, '로그인 요청 중 오류가 발생했습니다: ' + (error?.message || error));
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = '이메일로 로그인하기';
+        }
+      }
     });
   }
 
