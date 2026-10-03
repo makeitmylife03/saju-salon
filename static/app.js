@@ -144,7 +144,7 @@
       if (reportError) console.error('PAID REPORT ERROR', reportError);
 
       // 이전에 생성된 짧은 리포트가 저장되어 있으면 새 상세 리포트로 한 번만 갱신합니다.
-      if (report?.report && Number(report.report._version || 0) < 2) {
+      if (report?.report && Number(report.report._version || 0) < 3) {
         try {
           const refresh = await fetch('/payment/regenerate-report', {
             method: 'POST',
