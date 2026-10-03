@@ -219,7 +219,7 @@ def saju_result():
         'pillars':analysis['pillars'],'wuxing':analysis['wuxing'],'element_counts':analysis['element_counts'],
         'day_master':analysis['day_master'],'day_master_element':analysis['day_master_element'],
         'day_master_label':analysis['day_master_label'],'ten_gods':analysis['ten_gods'],
-        'na_yin':analysis['na_yin'],'twelve':analysis['twelve'],'extra':analysis['extra'],'daewoon':analysis['daewoon']
+        'na_yin':analysis['na_yin'],'twelve':analysis['twelve'],'extra':analysis['extra'],'daewoon':analysis['daewoon'],'teaser':analysis['teaser']
     }
     return render_template('saju_result.html',reading=reading,reading_id=None,summary=analysis['summary'],paid=False,fresh=True)
 
