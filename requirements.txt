@@ -4,3 +4,4 @@ python-dotenv==1.1.1
 openai==2.6.1
 gunicorn==23.0.0
 lunar_python==1.4.8
+requests==2.32.5
