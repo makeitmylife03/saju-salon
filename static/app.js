@@ -18,6 +18,31 @@
 
   function escapeHtml(v) { return String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 
+  async function handleAuthCallback() {
+    if (!location.pathname.startsWith('/auth/callback')) return;
+    const params = new URLSearchParams(location.search);
+    const code = params.get('code');
+    const errorDescription = params.get('error_description');
+    if (errorDescription) {
+      document.body.innerHTML = '<main><section class="card"><h1>로그인에 실패했습니다</h1><p>' + escapeHtml(errorDescription) + '</p><a class="btn" href="/login">다시 로그인하기</a></section></main>';
+      return;
+    }
+    if (code) {
+      const { error } = await sb.auth.exchangeCodeForSession(code);
+      if (error) {
+        console.error('AUTH CODE EXCHANGE ERROR', error);
+        document.body.innerHTML = '<main><section class="card"><h1>로그인 인증에 실패했습니다</h1><p>' + escapeHtml(error.message) + '</p><a class="btn" href="/login">다시 로그인하기</a></section></main>';
+        return;
+      }
+    }
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      location.replace('/my');
+    } else {
+      document.body.innerHTML = '<main><section class="card"><h1>로그인 인증을 확인하지 못했습니다</h1><p>메일 링크를 다시 눌러주세요.</p><a class="btn" href="/login">다시 로그인하기</a></section></main>';
+    }
+  }
+
   async function loginForm() {
     const form = $('#login-form'); if (!form || form.dataset.loginBound === 'true') return;
     form.dataset.loginBound = 'true';
@@ -303,6 +328,8 @@
   }
 
   async function init() {
+    await handleAuthCallback();
+    if (location.pathname.startsWith('/auth/callback')) return;
     await refreshNav();
     await loginForm();
     await loadMy();
