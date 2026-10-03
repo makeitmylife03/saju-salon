@@ -4,7 +4,7 @@
 
   <div class="eyebrow">YOUR SAJU</div>
   <h1>나의 사주 결과</h1>
-  <p id="reading-meta" class="meta">{% if reading %}{{ reading.birth_date }}{% if reading.birth_time %} · {{ reading.birth_time }}{% endif %}{% endif %}</p>
+  <p id="reading-meta" class="meta">{% if reading %}{{ reading.birth_date }}{% if reading.birth_time %} · {{ reading.birth_time }}{% endif %}{% endif %}</p>{% if reading %}<script id="saju-reading-data" type="application/json">{{ reading|tojson }}</script>{% endif %}
 
   {% if reading and reading.teaser %}
   <div class="summary teaser-main">
