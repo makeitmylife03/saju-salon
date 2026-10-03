@@ -179,13 +179,22 @@
     const r = report || {};
     const sections = Object.entries(r).filter(([k]) => k !== '_version');
     if (!sections.length) return '<p>상세 리포트가 준비 중입니다.</p>';
-    const toc = sections.slice(0, 8).map(([k]) => '<span>' + escapeHtml(k) + '</span>').join('');
-    const body = sections.map(([k,v]) => {
+    const order = [
+      '한눈에 보는 핵심','내 사주의 구조','타고난 성향','돈과 재물','직업과 사업',
+      '연애와 인간관계','반복되기 쉬운 패턴','내가 조심할 부분','대운과 시기',
+      '지금 가장 먼저 점검할 5가지','내 사주를 실제 생활에 적용한다면','현실적인 조언','마지막으로'
+    ];
+    const sorted = [
+      ...order.filter(k => r[k] !== undefined).map(k => [k, r[k]]),
+      ...sections.filter(([k]) => !order.includes(k))
+    ];
+    const toc = sorted.map(([k], i) => '<a href="#report-section-' + i + '" class="report-toc-item"><span>' + String(i + 1).padStart(2,'0') + '</span>' + escapeHtml(k) + '</a>').join('');
+    const body = sorted.map(([k,v], i) => {
       const text = escapeHtml(typeof v === 'string' ? v : JSON.stringify(v));
       const paragraphs = text.split(/\\n\\n|\\n/).filter(Boolean).map(p => '<p>' + p + '</p>').join('');
-      return '<article class="report-section"><h3>' + escapeHtml(k) + '</h3>' + paragraphs + '</article>';
+      return '<article id="report-section-' + i + '" class="report-section"><h3>' + escapeHtml(k) + '</h3>' + paragraphs + '</article>';
     }).join('');
-    return '<div class="report-toc">' + toc + '</div>' + body;
+    return '<nav class="report-toc" aria-label="상세 리포트 목차">' + toc + '</nav>' + body;
   }
 
   async function loadCheckout() {
