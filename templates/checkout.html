@@ -4,8 +4,9 @@
   <div class="eyebrow">CHECKOUT</div>
   <h1>{{ product.name }}</h1>
   <div class="checkout-price">{{ '{:,}'.format(product.amount) }}원</div>
-  <p>테스트 결제 단계입니다. 결제 승인은 서버에서 금액과 주문번호를 검증하도록 연결할 예정입니다.</p>
-  <button class="btn" id="pay-button">결제하기</button>
+  <p>안전한 테스트 결제로 결제 흐름을 확인합니다. 테스트 결제는 실제로 돈이 빠져나가지 않습니다.</p>
+  <button class="btn" id="pay-button">9,900원 결제하기</button>
   <div id="checkout-message" class="notice"></div>
 </section>
+<script src="https://js.tosspayments.com/v2/standard"></script>
 {% endblock %}
