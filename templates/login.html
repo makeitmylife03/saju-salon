@@ -38,7 +38,7 @@
       try {
         const { error } = await sb.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: window.location.origin + '/my', shouldCreateUser: true }
+          options: { emailRedirectTo: window.location.origin + '/auth/callback', shouldCreateUser: true }
         });
         if (error) {
           console.error('SUPABASE OTP ERROR', error);
