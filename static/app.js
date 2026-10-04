@@ -87,7 +87,7 @@
         const result = await sb.auth.signInWithOtp({
           email,
           options: {
-            emailRedirectTo: window.location.origin + '/my',
+            emailRedirectTo: window.location.origin + '/auth/callback',
             shouldCreateUser: true
           }
         });
