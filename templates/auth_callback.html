@@ -2,7 +2,70 @@
 {% block content %}
 <section class="card auth-card">
   <div class="eyebrow">LOGIN</div>
-  <h1>로그인 확인 중입니다</h1>
-  <p>잠시만 기다려주세요.</p>
+  <h1 id="callback-title">로그인 확인 중입니다</h1>
+  <p id="callback-message">잠시만 기다려주세요.</p>
 </section>
+
+<script>
+(async () => {
+  const title = document.getElementById('callback-title');
+  const message = document.getElementById('callback-message');
+
+  const fail = (text) => {
+    title.textContent = '로그인 인증에 실패했습니다';
+    message.textContent = text || '로그인 정보를 확인하지 못했습니다.';
+  };
+
+  try {
+    if (!window.supabase || !window.SAJU_CONFIG?.url || !window.SAJU_CONFIG?.key) {
+      throw new Error('로그인 기능을 불러오지 못했습니다. 페이지를 새로고침해주세요.');
+    }
+
+    const sb = window.supabase.createClient(
+      window.SAJU_CONFIG.url,
+      window.SAJU_CONFIG.key
+    );
+
+    const params = new URLSearchParams(window.location.search);
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const errorDescription = params.get('error_description');
+    const code = params.get('code');
+    const tokenHash = params.get('token_hash');
+    const type = params.get('type') || 'email';
+
+    if (errorDescription) throw new Error(errorDescription);
+
+    if (code) {
+      const result = await sb.auth.exchangeCodeForSession(code);
+      if (result.error) throw result.error;
+    } else if (tokenHash) {
+      const result = await sb.auth.verifyOtp({ token_hash: tokenHash, type });
+      if (result.error) throw result.error;
+    } else if (hash.get('access_token') && hash.get('refresh_token')) {
+      const result = await sb.auth.setSession({
+        access_token: hash.get('access_token'),
+        refresh_token: hash.get('refresh_token')
+      });
+      if (result.error) throw result.error;
+    } else {
+      const result = await sb.auth.getSession();
+      if (!result.data.session) {
+        throw new Error('로그인 인증 정보가 없습니다. 로그인 화면에서 새 메일을 다시 받아주세요.');
+      }
+    }
+
+    const sessionResult = await sb.auth.getSession();
+    if (!sessionResult.data.session) {
+      throw new Error('이메일 인증은 완료됐지만 로그인 세션을 만들지 못했습니다.');
+    }
+
+    title.textContent = '로그인되었습니다';
+    message.textContent = '잠시 후 내 결과 페이지로 이동합니다.';
+    setTimeout(() => location.replace('/my'), 300);
+  } catch (error) {
+    console.error('AUTH CALLBACK ERROR', error);
+    fail(error?.message || String(error));
+  }
+})();
+</script>
 {% endblock %}
