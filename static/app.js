@@ -269,7 +269,7 @@
     const toc = sorted.map(([k], i) => '<a href="#report-section-' + i + '" class="report-toc-item"><span>' + String(i + 1).padStart(2,'0') + '</span>' + escapeHtml(k) + '</a>').join('');
     const body = sorted.map(([k,v], i) => {
       let text = escapeHtml(typeof v === 'string' ? v : JSON.stringify(v));
-      text = text.replace(/&lt;strong&gt;/g, '<strong>').replace(/&lt;\\/strong&gt;/g, '</strong>');
+      text = text.replace(/&lt;strong&gt;/g, '<strong>').replace(/&lt;\/strong&gt;/g, '</strong>');
       const paragraphs = text.split(/\\n\\n|\\n/).filter(Boolean).map(p => '<p>' + p + '</p>').join('');
       return '<article id="report-section-' + i + '" class="report-section"><h3>' + escapeHtml(k) + '</h3>' + paragraphs + '</article>';
     }).join('');
