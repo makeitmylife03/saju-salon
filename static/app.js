@@ -146,6 +146,37 @@
         console.error('SAJU DATA PARSE ERROR', e);
       }
 
+      // 같은 계정에서 동일한 생년월일·출생시간·성별의 결과가 있으면
+      // 새 행을 만들지 않고 기존 결과를 재사용합니다.
+      let existingQuery = sb.from('readings')
+        .select('id')
+        .eq('user_id', session.user.id)
+        .eq('birth_date', birthDate);
+
+      existingQuery = birthTime
+        ? existingQuery.eq('birth_time', birthTime)
+        : existingQuery.is('birth_time', null);
+
+      existingQuery = gender
+        ? existingQuery.eq('gender', gender)
+        : existingQuery.is('gender', null);
+
+      const { data: existing, error: lookupError } = await existingQuery
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (lookupError) {
+        msg(resultMsg, '기존 결과 확인에 실패했습니다: ' + lookupError.message);
+        return;
+      }
+
+      if (existing?.id) {
+        // 기존 구매 내역과 상세 리포트를 그대로 보존하고 해당 결과로 이동합니다.
+        location.replace('/saju/result/' + encodeURIComponent(existing.id));
+        return;
+      }
+
       const { data, error } = await sb.from('readings').insert({
         user_id: session.user.id,
         birth_date: birthDate,
