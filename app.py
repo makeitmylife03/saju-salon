@@ -1,6 +1,7 @@
 import os
 import base64
 import uuid
+from datetime import date
 import requests
 from flask import Flask, render_template, request, redirect, url_for
 from lunar_python import Solar
@@ -142,7 +143,7 @@ def make_detailed_report(analysis):
     weakest = min(counts, key=counts.get) if counts else elem
     day = analysis.get('day_master_label', '')
     birth_year = int(str(analysis.get('birth_date','2000-01-01'))[:4])
-    current_year = 2026
+    current_year = date.today().year
     age = current_year - birth_year + 1
     daewoon = analysis.get('daewoon') or []
     current_daewoon = next((d for d in daewoon if d.get('start_age', 999) <= age <= d.get('end_age', -1)), None)
@@ -248,7 +249,7 @@ def make_detailed_report(analysis):
 
     return {
         '한눈에 보는 핵심': f"{day} · {elem} 기운을 중심으로 보면, {p['core']}\n\n오행 분포에서 상대적으로 두드러진 쪽은 {strongest}({labels[strongest]})이고, 적게 나타난 쪽은 {weakest}입니다. 이는 좋고 나쁨을 판정하는 기준이 아니라, 자신의 익숙한 방식과 의식적으로 보완할 행동을 함께 살펴보기 위한 참고점입니다.",
-        '내 사주의 구조': f"사주의 네 기둥은 {pillar_summary}로 계산됩니다. 각 기둥은 서로 다른 역할을 하므로 한 글자만으로 성격이나 미래를 단정하기보다 전체 구성을 함께 보는 것이 중요합니다.\n\n{balance} 일간은 {day}으로, 전통적인 해석에서 자신을 나타내는 중심축으로 봅니다. {elem}의 주제는 {p['theme']}이며, 실제 생활에서는 환경과 경험에 따라 다르게 드러날 수 있습니다.",
+        '내 사주의 구조': f"사주의 네 기둥은 {pillar_summary}로 계산됩니다. 각 기둥은 서로 다른 역할을 하므로 한 글자만으로 성격이나 미래를 단정하기보다 전체 구성을 함께 보는 것이 중요합니다.\n\n{balance} 일간은 {day}으로, 전통적인 해석에서 자신을 나타내는 중심축으로 봅니다. {elem}의 주제는 {p['theme']}이며, 실제 생활에서는 환경과 경험에 따라 다르게 드러날 수 있습니다." + ("\n\n출생시간을 입력하지 않아 정오를 임시 기준으로 계산했습니다. 따라서 시주와 출생시간에 민감한 해석은 확정적으로 보지 말고 참고용으로만 확인해주세요." if not analysis.get('birth_time') else ""),
         '타고난 성향': f"{p['core']}\n\n{p['shadow']}\n\n스스로를 점검할 때는 성향을 장점이나 단점 하나로 고정하기보다, 어떤 상황에서 도움이 되고 어떤 상황에서 부담이 되는지 구분해보세요. 특히 에너지가 올라가는 상황과 소진되는 상황을 각각 한 가지씩 기록하면 자신에게 맞는 일하는 방식과 휴식 방식을 찾는 데 도움이 됩니다.",
         '돈과 재물': f"{p['money']}\n\n<strong>생활 속에서 나타날 수 있는 모습</strong>\n{p['money_case']}\n\n<strong>실천 기준</strong>\n수입·고정비·저축·투자 가능 금액을 분리해서 기록하고, 큰 지출은 미리 정한 상한선과 보류 기간을 적용해보세요. 사주 해석만으로 재물의 많고 적음이나 투자 결과를 확정할 수는 없으므로 실제 숫자와 감당 가능한 위험을 기준으로 판단하는 것이 우선입니다.",
         '직업과 사업': f"{p['work']}\n\n<strong>일에서 활용할 강점</strong>\n{p['work_case']}\n\n<strong>환경을 점검하는 질문</strong>\n내가 결정권을 갖는 범위는 어디까지인지, 결과를 확인하는 주기는 적절한지, 반복 업무를 다른 사람이나 시스템에 맡길 수 있는지 살펴보세요. 사업을 한다면 매출뿐 아니라 고정비와 현금흐름, 업무가 특정 사람에게 과도하게 몰리는지도 함께 점검하는 것이 현실적입니다.",
