@@ -302,9 +302,9 @@
       let text = escapeHtml(typeof v === 'string' ? v : JSON.stringify(v));
       text = text.replace(/&lt;strong&gt;/g, '<strong>').replace(/&lt;\/strong&gt;/g, '</strong>');
       const paragraphs = text.split(/\\n\\n|\\n/).filter(Boolean).map(p => '<p>' + p + '</p>').join('');
-      return '<article id="report-section-' + i + '" class="report-section"><h3>' + escapeHtml(k) + '</h3>' + paragraphs + '</article>';
+      return '<article id="report-section-' + i + '" class="report-section"><h3>' + escapeHtml(k) + '</h3>' + paragraphs + '<a class="report-back-to-toc" href="#report-toc">목차로 돌아가기 ↑</a></article>';
     }).join('');
-    return '<nav class="report-toc" aria-label="상세 리포트 목차">' + toc + '</nav>' + body;
+    return '<nav id="report-toc" class="report-toc" aria-label="상세 리포트 목차"><div class="report-toc-heading"><strong>리포트 목차</strong><span>궁금한 항목을 선택해 바로 이동하세요.</span></div>' + toc + '</nav>' + body;
   }
 
   async function loadCheckout() {
