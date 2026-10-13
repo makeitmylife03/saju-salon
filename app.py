@@ -491,7 +491,7 @@ def payment_success():
         if not calculation:
             return render_template('payment_result.html', success=False, message='사주 분석 데이터를 찾을 수 없습니다.'), 500
         report = make_detailed_report(calculation)
-        report['_version'] = 5
+        report['_version'] = 6
         SUPABASE_ADMIN.table('orders').update({'payment_key':payment_key,'status':'PAID','paid_at':'now()'}).eq('order_id', order_id).execute()
         SUPABASE_ADMIN.table('paid_reports').upsert({'reading_id':order['reading_id'],'report':report}, on_conflict='reading_id').execute()
         return redirect(url_for('saved_saju_result', reading_id=order['reading_id']) + '?paid=1')
@@ -540,7 +540,7 @@ def regenerate_report():
             return {'error':'사주 분석 데이터를 찾을 수 없습니다.'}, 500
 
         report = make_detailed_report(calculation)
-        report['_version'] = 5
+        report['_version'] = 6
         SUPABASE_ADMIN.table('paid_reports').upsert(
             {'reading_id': reading_id, 'report': report},
             on_conflict='reading_id'
