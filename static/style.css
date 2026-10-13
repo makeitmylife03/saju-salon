@@ -101,3 +101,19 @@ html{scroll-behavior:smooth}
   .report-key-details{padding:14px}
   .report-key-details p{font-size:15px;line-height:1.9}
 }
+
+
+/* Section 02: improve structure-analysis reading rhythm without changing text */
+.report-structure-section{padding-top:30px;padding-bottom:30px}
+.report-structure-section h3{margin-bottom:18px}
+.report-structure-intro{padding:18px 20px;border:1px solid #ece3d5;border-radius:14px;background:#fffdfa}
+.report-structure-intro .report-insight-label{margin-bottom:12px}
+.report-structure-intro p{font-size:16px;line-height:2.05;color:#554e44;margin:0 0 15px}
+.report-structure-intro p:last-child{margin-bottom:0}
+.report-structure-intro .report-structure-lead{font-weight:600;color:#30291f;padding-bottom:14px;border-bottom:1px solid #eee5d8;margin-bottom:14px}
+.report-structure-section .report-back-to-toc{margin-top:18px}
+@media(max-width:600px){
+  .report-structure-section{padding:23px 14px}
+  .report-structure-intro{padding:15px 14px}
+  .report-structure-intro p{font-size:15.5px;line-height:1.95}
+}
