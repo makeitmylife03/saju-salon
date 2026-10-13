@@ -301,32 +301,16 @@
     const body = sorted.map(([k,v], i) => {
       let text = escapeHtml(typeof v === 'string' ? v : JSON.stringify(v));
       text = text.replace(/&lt;strong&gt;/g, '<strong>').replace(/&lt;\/strong&gt;/g, '</strong>');
-      const parts = text.split(/\\n\\n|\\n/).filter(Boolean);
+      const parts = text.split(/\\n\\n|\\n/).map(p => p.trim()).filter(Boolean);
       let paragraphs;
+      const sectionClass = i === 0 ? 'report-section report-highlight-section' : 'report-section report-readable-section';
       if (i === 0) {
         paragraphs = '<div class="report-key-takeaway"><span class="report-insight-label">핵심 요약</span><p class="report-lead">' + (parts[0] || '당신의 사주에서 눈여겨볼 핵심 내용을 정리했습니다.') + '</p></div>' +
           (parts.length > 1 ? '<div class="report-key-details"><span class="report-insight-label">함께 살펴볼 내용</span>' + parts.slice(1).map(p => '<p>' + p + '</p>').join('') + '</div>' : '');
-      } else if (i === 1) {
-        // 내용은 바꾸지 않고, 긴 문장을 두 문장씩 묶어 읽기 편하게 나눕니다.
-        const sentences = (parts.join(' ').match(/[^.!?]+[.!?]?/g) || [parts.join(' ')]).map(s => s.trim()).filter(Boolean);
-        const groups = [];
-        for (let j = 0; j < sentences.length; j += 2) groups.push(sentences.slice(j, j + 2).join(' '));
-        paragraphs = '<div class="report-structure-intro"><span class="report-insight-label">사주 구성 해석</span>' +
-          groups.map((p, j) => '<p' + (j === 0 ? ' class="report-structure-lead"' : '') + '>' + p + '</p>').join('') +
-          '</div>';
       } else {
-        // 자동으로 문장 중간을 자르지 않고, 원문에 있는 문단 경계만 유지합니다.
-        const readableParts = (parts.length ? parts : [text]).map(p => p.trim()).filter(Boolean);
-        const isPracticalTopic = ['돈과 재물','직업과 사업','연애와 인간관계'].includes(k);
-        const insightLabel = isPracticalTopic ? '<span class="report-insight-label">이 항목의 핵심</span>' : '';
-        paragraphs = '<div class="report-section-body">' +
-          (insightLabel && readableParts.length ? '<div class="report-topic-insight">' + insightLabel + '<p class="report-section-lead">' + readableParts[0] + '</p></div>' : '') +
-          readableParts.slice(insightLabel ? 1 : 0).map((p, j) =>
-            '<p' + (!insightLabel && j === 0 ? ' class="report-section-lead"' : '') + '>' + p + '</p>'
-          ).join('') + '</div>';
+        // 모든 본문 항목은 같은 구조를 사용하고 원문 문단 구분을 유지합니다.
+        paragraphs = '<div class="report-section-body">' + (parts.length ? parts : [text]).map(p => '<p>' + p + '</p>').join('') + '</div>';
       }
-      const topicClass = k === '돈과 재물' ? ' report-topic-money' : k === '직업과 사업' ? ' report-topic-career' : k === '연애와 인간관계' ? ' report-topic-relationship' : '';
-      const sectionClass = (i === 0 ? 'report-section report-highlight-section' : (i === 1 ? 'report-section report-structure-section' : 'report-section report-readable-section')) + topicClass;
       return '<article id="report-section-' + i + '" class="' + sectionClass + '"><h3>' + escapeHtml(k) + '</h3>' + paragraphs + '<a class="report-back-to-toc" href="#report-toc">목차로 돌아가기 ↑</a></article>';
     }).join('');
     return '<nav id="report-toc" class="report-toc" aria-label="상세 리포트 목차"><div class="report-toc-heading"><strong>리포트 목차</strong><span>궁금한 항목을 선택해 바로 이동하세요.</span></div>' + toc + '</nav>' + body;
