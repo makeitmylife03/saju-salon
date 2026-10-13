@@ -131,3 +131,21 @@ html{scroll-behavior:smooth}
   .report-readable-section{padding:23px 14px}
   .report-section-body p{font-size:15.5px;line-height:1.95;word-break:normal}
 }
+
+
+/* Practical-topic highlights: keep the report editorial, not overly card-heavy */
+.report-topic-insight{margin:0 0 18px;padding:16px 18px 17px;border-left:3px solid #a68a5e;border-radius:0 12px 12px 0;background:#f8f2e8}
+.report-topic-insight .report-insight-label{margin-bottom:8px}
+.report-topic-insight .report-section-lead{font-weight:600;color:#30291f;font-size:16px;line-height:1.95;margin:0}
+.report-topic-money h3::before,
+.report-topic-career h3::before,
+.report-topic-relationship h3::before{background:#927b58}
+.report-topic-money .report-section-body,
+.report-topic-career .report-section-body,
+.report-topic-relationship .report-section-body{max-width:100%}
+.report-readable-section .report-section-body p{margin-bottom:16px}
+.report-readable-section .report-section-body p:last-child{margin-bottom:0}
+@media(max-width:600px){
+  .report-topic-insight{padding:14px 13px;margin-bottom:15px}
+  .report-topic-insight .report-section-lead{font-size:15px;line-height:1.9}
+}
