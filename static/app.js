@@ -302,11 +302,22 @@
       let text = escapeHtml(typeof v === 'string' ? v : JSON.stringify(v));
       text = text.replace(/&lt;strong&gt;/g, '<strong>').replace(/&lt;\/strong&gt;/g, '</strong>');
       const parts = text.split(/\\n\\n|\\n/).filter(Boolean);
-      const paragraphs = i === 0
-        ? '<div class="report-key-takeaway"><span class="report-insight-label">핵심 요약</span><p class="report-lead">' + (parts[0] || '당신의 사주에서 눈여겨볼 핵심 내용을 정리했습니다.') + '</p></div>' +
-          (parts.length > 1 ? '<div class="report-key-details"><span class="report-insight-label">함께 살펴볼 내용</span>' + parts.slice(1).map(p => '<p>' + p + '</p>').join('') + '</div>' : '')
-        : parts.map(p => '<p>' + p + '</p>').join('');
-      const sectionClass = i === 0 ? 'report-section report-highlight-section' : 'report-section';
+      let paragraphs;
+      if (i === 0) {
+        paragraphs = '<div class="report-key-takeaway"><span class="report-insight-label">핵심 요약</span><p class="report-lead">' + (parts[0] || '당신의 사주에서 눈여겨볼 핵심 내용을 정리했습니다.') + '</p></div>' +
+          (parts.length > 1 ? '<div class="report-key-details"><span class="report-insight-label">함께 살펴볼 내용</span>' + parts.slice(1).map(p => '<p>' + p + '</p>').join('') + '</div>' : '');
+      } else if (i === 1) {
+        // 내용은 바꾸지 않고, 긴 문장을 두 문장씩 묶어 읽기 편하게 나눕니다.
+        const sentences = (parts.join(' ').match(/[^.!?]+[.!?]?/g) || [parts.join(' ')]).map(s => s.trim()).filter(Boolean);
+        const groups = [];
+        for (let j = 0; j < sentences.length; j += 2) groups.push(sentences.slice(j, j + 2).join(' '));
+        paragraphs = '<div class="report-structure-intro"><span class="report-insight-label">사주 구성 해석</span>' +
+          groups.map((p, j) => '<p' + (j === 0 ? ' class="report-structure-lead"' : '') + '>' + p + '</p>').join('') +
+          '</div>';
+      } else {
+        paragraphs = parts.map(p => '<p>' + p + '</p>').join('');
+      }
+      const sectionClass = i === 0 ? 'report-section report-highlight-section' : (i === 1 ? 'report-section report-structure-section' : 'report-section');
       return '<article id="report-section-' + i + '" class="' + sectionClass + '"><h3>' + escapeHtml(k) + '</h3>' + paragraphs + '<a class="report-back-to-toc" href="#report-toc">목차로 돌아가기 ↑</a></article>';
     }).join('');
     return '<nav id="report-toc" class="report-toc" aria-label="상세 리포트 목차"><div class="report-toc-heading"><strong>리포트 목차</strong><span>궁금한 항목을 선택해 바로 이동하세요.</span></div>' + toc + '</nav>' + body;
