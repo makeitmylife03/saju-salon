@@ -80,3 +80,24 @@ html{scroll-behavior:smooth}
   .report-back-to-toc{margin-top:16px}
   .paid-preview{padding:25px 16px}
 }
+
+
+/* Key takeaway section: clearer editorial hierarchy */
+.report-highlight-section{background:linear-gradient(180deg,#f8f2e8 0%,#fffdf8 100%);border:1px solid #e5d8c4!important;border-radius:18px;margin-top:18px!important;padding:30px!important}
+.report-highlight-section h3{font-size:23px;margin-bottom:20px}
+.report-highlight-section h3::before{background:#927b58}
+.report-key-takeaway{padding:18px 19px 19px;border-left:3px solid #a68a5e;background:#fffdf9;border-radius:0 12px 12px 0;margin-bottom:14px}
+.report-insight-label{display:block;font-size:11px;font-weight:800;letter-spacing:.04em;color:#927b58;margin-bottom:9px}
+.report-key-takeaway .report-lead{font-size:17px;line-height:1.95;font-weight:600;color:#30291f;margin:0}
+.report-key-details{padding:16px 18px;border:1px solid #e9dfd0;border-radius:12px;background:rgba(255,255,255,.65)}
+.report-key-details p{font-size:15px;line-height:1.95;margin:0 0 11px}
+.report-key-details p:last-child{margin-bottom:0}
+.report-highlight-section .report-back-to-toc{margin-top:20px}
+@media(max-width:600px){
+  .report-highlight-section{padding:22px 15px!important;margin-top:14px!important}
+  .report-highlight-section h3{font-size:20px;margin-bottom:16px}
+  .report-key-takeaway{padding:15px 14px}
+  .report-key-takeaway .report-lead{font-size:16px;line-height:1.9}
+  .report-key-details{padding:14px}
+  .report-key-details p{font-size:15px;line-height:1.9}
+}
