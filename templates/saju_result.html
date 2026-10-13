@@ -64,6 +64,7 @@
       <div class="bazi-grid">{% for p in reading.pillars %}<div class="bazi-item"><span>{{ p.label }}</span><strong>{{ p.label_full }}</strong><small>천간 {{ p.gan }} · 지지 {{ p.zhi }} <em>({{ p.pillar }})</em></small></div>{% endfor %}</div>
       <p class="meta">일간 <strong>{{ reading.day_master_label }}</strong> · {{ reading.day_master_element }} 기운</p>
       <div class="element-counts">{% for element, count in reading.element_counts.items() %}<span>{{ element }} {{ count }}</span>{% endfor %}</div>
+      <p class="meta">오행 개수는 천간 4개와 지지 4개의 기본 오행을 합산한 값입니다. 지지 안의 지장간까지 포함한 개수와는 다를 수 있습니다.</p>
     </div>
     <div class="summary"><h2>십신</h2>{% for x in [('년주',reading.ten_gods.year_gan,reading.ten_gods.year_zhi),('월주',reading.ten_gods.month_gan,reading.ten_gods.month_zhi),('일주',reading.ten_gods.day_gan,reading.ten_gods.day_zhi),('시주',reading.ten_gods.time_gan,reading.ten_gods.time_zhi)] %}<div class="summary-line"><b>{{ x[0] }}</b><p>{{ x[1] }}<br>{{ x[2]|join(' / ') }}</p></div>{% endfor %}</div>
     <div class="summary"><h2>지장간 · 12운성 · 대운</h2>{% for p in reading.pillars %}<div class="summary-line"><b>{{ p.label }}</b><p>{{ p.hidden_stems_label }} · {{ reading.twelve[p.key] }}</p></div>{% endfor %}{% for d in reading.daewoon %}<div class="summary-line"><b>{{ d.gan_zhi_label }}</b><p>{{ d.start_year }}~{{ d.end_year }} · {{ d.start_age }}~{{ d.end_age }}세</p></div>{% endfor %}</div>
