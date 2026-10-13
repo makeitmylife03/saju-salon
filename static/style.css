@@ -149,3 +149,26 @@ html{scroll-behavior:smooth}
   .report-topic-insight{padding:14px 13px;margin-bottom:15px}
   .report-topic-insight .report-section-lead{font-size:15px;line-height:1.9}
 }
+
+
+/* Restore a single editorial style across all report chapters */
+.report-readable-section{background:transparent!important;border:0!important;border-bottom:1px solid #ece5da!important;border-radius:0!important;margin:0!important;padding:28px 24px!important}
+.report-readable-section h3{font-size:20px;line-height:1.5;margin:0 0 14px!important;display:flex;align-items:center;gap:10px}
+.report-readable-section h3::before{background:#30291f!important}
+.report-section-body{padding:0!important;border:0!important;background:transparent!important}
+.report-section-body p{font-size:15.5px;line-height:2;color:#625b51;margin:0 0 14px;word-break:keep-all}
+.report-section-body p:last-child{margin-bottom:0}
+.report-readable-section .report-back-to-toc{margin-top:16px}
+.report-structure-section{background:transparent!important;border:0!important;border-bottom:1px solid #ece5da!important;border-radius:0!important;margin:0!important;padding:28px 24px!important}
+.report-structure-section h3::before{background:#30291f!important}
+.report-structure-intro{padding:0!important;border:0!important;border-radius:0!important;background:transparent!important}
+.report-structure-intro .report-insight-label{display:none!important}
+.report-structure-intro p{font-size:15.5px;line-height:2;color:#625b51;margin:0 0 14px}
+.report-structure-intro .report-structure-lead{font-weight:400;color:#625b51;padding:0;border:0;margin-bottom:14px}
+.report-topic-insight{display:none!important}
+.report-topic-money h3::before,.report-topic-career h3::before,.report-topic-relationship h3::before{background:#30291f!important}
+@media(max-width:600px){
+  .report-readable-section,.report-structure-section{padding:23px 14px!important}
+  .report-readable-section h3{font-size:18px}
+  .report-section-body p,.report-structure-intro p{font-size:15px;line-height:1.95;word-break:normal}
+}
