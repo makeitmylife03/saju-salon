@@ -211,5 +211,49 @@ class SajuCalculationTests(unittest.TestCase):
         self.assertIn('3년 2개월 25일', report['대운과 시기'])
 
 
+    def test_paid_report_generation_recalculates_legacy_saved_calculation(self):
+        # 결제 직후 구버전 계산값에 대운 메타정보가 없을 때 최신 계산을 사용해야 합니다.
+        from unittest.mock import patch
+        from app import app
+
+        legacy = {'calculation': {'birth_date': '1990-05-17', 'daewoon': []}}
+        refreshed = {
+            'birth_date': '1990-05-17',
+            'birth_time': '14:30',
+            'gender': 'male',
+            'free_summary': legacy,
+        }
+        expected_calculation = {
+            'birth_date': '1990-05-17',
+            'daewoon_meta': {'direction': '순행', 'start_date': '1993-08-12'},
+            'daewoon': [],
+        }
+        client = app.test_client()
+        with patch('app._require_supabase_admin'), \
+             patch('app.TOSS_SECRET_KEY', 'test-secret'), \
+             patch('app.base64.b64encode', return_value=b'dGVzdDo='), \
+             patch('app.requests.post') as post, \
+             patch('app.SUPABASE_ADMIN') as supabase, \
+             patch('app.calculate_saju', return_value=expected_calculation) as calculate, \
+             patch('app.make_detailed_report', return_value={'대운과 시기': '순행'}) as report_builder:
+            post.return_value.status_code = 200
+            post.return_value.json.return_value = {'status': 'DONE'}
+            orders = supabase.table.return_value
+            orders.select.return_value.eq.return_value.single.return_value.execute.return_value.data = {
+                'order_id': 'order-test',
+                'reading_id': 'reading-test',
+                'amount': 9900,
+                'status': 'READY',
+            }
+            readings = supabase.table.return_value
+            readings.select.return_value.eq.return_value.single.return_value.execute.return_value.data = refreshed
+
+            response = client.get('/payment/success?paymentKey=pay-test&orderId=order-test&amount=9900')
+
+        self.assertEqual(response.status_code, 302)
+        calculate.assert_called_once_with('1990-05-17', '14:30', 'male')
+        report_builder.assert_called_once_with(expected_calculation)
+
+
 if __name__ == '__main__':
     unittest.main()
