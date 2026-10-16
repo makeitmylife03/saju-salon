@@ -34,6 +34,18 @@ class SajuCalculationTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     calculate_saju(birth_date, birth_time, 'male')
 
+    def test_invalid_form_input_returns_validation_error(self):
+        from app import app
+
+        client = app.test_client()
+        response = client.post('/saju/result', data={
+            'birth_date': '1990-02-30',
+            'birth_time': '14:30',
+            'gender': 'male',
+        })
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('생년월일 또는 출생시간을 확인해주세요'.encode(), response.data)
+
     def test_missing_birth_time_is_recorded_as_unknown(self):
         result = calculate_saju('1990-05-17', '', 'female')
         self.assertEqual(result['birth_time'], '')
