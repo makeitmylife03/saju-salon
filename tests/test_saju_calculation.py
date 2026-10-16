@@ -75,6 +75,7 @@ class SajuCalculationTests(unittest.TestCase):
             'day_master_label': '임(壬)',
             'birth_date': '1990-05-17',
             'birth_time': '14:30',
+            'gender': 'male',
             'daewoon': [{
                 'gan_zhi_label': '갑자',
                 'start_age': 1,
