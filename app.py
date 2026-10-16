@@ -269,19 +269,26 @@ def calculate_saju(birth_date, birth_time, gender):
     if not birth_date:
         raise ValueError('생년월일을 입력해주세요.')
 
+    # Validate user input before entering the calculation-library error handler.
     try:
         parsed_date = datetime.strptime(birth_date, '%Y-%m-%d')
-        if parsed_date.strftime('%Y-%m-%d') != birth_date:
-            raise ValueError('생년월일 형식이 올바르지 않습니다.')
+    except (TypeError, ValueError) as exc:
+        raise ValueError('생년월일을 올바른 날짜로 입력해주세요. (예: 1990-05-17)') from exc
+    if parsed_date.strftime('%Y-%m-%d') != birth_date:
+        raise ValueError('생년월일 형식이 올바르지 않습니다. (예: 1990-05-17)')
 
-        year, month, day = parsed_date.year, parsed_date.month, parsed_date.day
-        hour, minute = (12, 0)
-        if birth_time:
+    hour, minute = (12, 0)
+    if birth_time:
+        try:
             parsed_time = datetime.strptime(birth_time, '%H:%M')
-            if parsed_time.strftime('%H:%M') != birth_time:
-                raise ValueError('출생시간 형식이 올바르지 않습니다.')
-            hour, minute = parsed_time.hour, parsed_time.minute
+        except (TypeError, ValueError) as exc:
+            raise ValueError('출생시간을 올바르게 입력해주세요. (예: 14:30)') from exc
+        if parsed_time.strftime('%H:%M') != birth_time:
+            raise ValueError('출생시간 형식이 올바르지 않습니다. (예: 14:30)')
+        hour, minute = parsed_time.hour, parsed_time.minute
 
+    year, month, day = parsed_date.year, parsed_date.month, parsed_date.day
+    try:
         solar = Solar.fromYmdHms(year, month, day, hour, minute, 0)
         eight = solar.getLunar().getEightChar()
 
