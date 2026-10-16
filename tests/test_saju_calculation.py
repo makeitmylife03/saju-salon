@@ -45,6 +45,20 @@ class SajuCalculationTests(unittest.TestCase):
         self.assertEqual(before['pillars'][0]['pillar'], after['pillars'][0]['pillar'])
         self.assertNotEqual(before['pillars'][1]['pillar'], after['pillars'][1]['pillar'])
 
+    def test_birth_time_changes_time_pillar_without_changing_date_pillars(self):
+        morning = calculate_saju('1990-05-17', '08:00', 'male')
+        evening = calculate_saju('1990-05-17', '20:00', 'male')
+        for index in range(3):
+            self.assertEqual(morning['pillars'][index]['pillar'], evening['pillars'][index]['pillar'])
+        self.assertNotEqual(morning['pillars'][3]['pillar'], evening['pillars'][3]['pillar'])
+
+    def test_daewoon_direction_can_differ_by_gender(self):
+        male = calculate_saju('1990-05-17', '14:30', 'male')['daewoon']
+        female = calculate_saju('1990-05-17', '14:30', 'female')['daewoon']
+        self.assertTrue(male)
+        self.assertTrue(female)
+        self.assertNotEqual(male[0]['gan_zhi'], female[0]['gan_zhi'])
+
     def test_unselected_gender_does_not_generate_daewoon(self):
         result = calculate_saju('1990-05-17', '14:30', 'other')
         self.assertEqual(result['daewoon'], [])
