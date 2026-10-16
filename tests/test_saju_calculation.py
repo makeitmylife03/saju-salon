@@ -70,6 +70,12 @@ class SajuCalculationTests(unittest.TestCase):
         for period in periods:
             self.assertLessEqual(period['start_year'], period['end_year'])
             self.assertLessEqual(period['start_age'], period['end_age'])
+            # lunar-python defines each major luck cycle as ten consecutive
+            # calendar years, with age indexed from the solar birth year.
+            birth_year = 1990
+            self.assertEqual(period['start_age'], period['start_year'] - birth_year + 1)
+            self.assertEqual(period['end_year'] - period['start_year'], 9)
+            self.assertEqual(period['end_age'] - period['start_age'], 9)
         for previous, current in zip(periods, periods[1:]):
             self.assertLessEqual(previous['start_year'], current['start_year'])
             self.assertLessEqual(previous['start_age'], current['start_age'])
