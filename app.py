@@ -536,7 +536,7 @@ def payment_success():
         if not calculation:
             return render_template('payment_result.html', success=False, message='사주 분석 데이터를 찾을 수 없습니다.'), 500
         report = make_detailed_report(calculation)
-        report['_version'] = 7
+        report['_version'] = 8
         SUPABASE_ADMIN.table('orders').update({'payment_key':payment_key,'status':'PAID','paid_at':'now()'}).eq('order_id', order_id).execute()
         SUPABASE_ADMIN.table('paid_reports').upsert({'reading_id':order['reading_id'],'report':report}, on_conflict='reading_id').execute()
         return redirect(url_for('saved_saju_result', reading_id=order['reading_id']) + '?paid=1')
@@ -573,19 +573,29 @@ def regenerate_report():
 
         reading_res = (
             SUPABASE_ADMIN.table('readings')
-            .select('id,free_summary')
+            .select('id,birth_date,birth_time,gender,free_summary')
             .eq('id', reading_id)
             .eq('user_id', user['id'])
             .single()
             .execute()
         )
-        saved = (reading_res.data or {}).get('free_summary') or {}
+        reading_data = reading_res.data or {}
+        saved = reading_data.get('free_summary') or {}
         calculation = saved.get('calculation') if isinstance(saved, dict) else None
+        # 기존 저장 계산값에 대운 메타정보가 없으면 저장된 출생정보로 재계산합니다.
+        if reading_data.get('birth_date') and (
+            not isinstance(calculation, dict) or not calculation.get('daewoon_meta')
+        ):
+            calculation = calculate_saju(
+                reading_data.get('birth_date'),
+                reading_data.get('birth_time') or '',
+                reading_data.get('gender') or ''
+            )
         if not calculation:
             return {'error':'사주 분석 데이터를 찾을 수 없습니다.'}, 500
 
         report = make_detailed_report(calculation)
-        report['_version'] = 7
+        report['_version'] = 8
         SUPABASE_ADMIN.table('paid_reports').upsert(
             {'reading_id': reading_id, 'report': report},
             on_conflict='reading_id'
