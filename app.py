@@ -350,7 +350,7 @@ def calculate_saju(birth_date, birth_time, gender):
         daewoon = []
         if gender in GENDER_MAP:
             yun = eight.getYun(GENDER_MAP[gender], 1)
-            for item in yun.getDaYun(9)[1:]:
+            for item in yun.getDaYun(10)[1:]:
                 gz = item.getGanZhi()
                 daewoon.append({
                     'gan_zhi':gz,
