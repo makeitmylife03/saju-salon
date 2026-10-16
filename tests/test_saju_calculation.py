@@ -33,6 +33,18 @@ class SajuCalculationTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     calculate_saju(birth_date, birth_time, 'male')
 
+    def test_pillars_change_across_lichun_year_boundary(self):
+        before = calculate_saju('2024-02-03', '12:00', 'male')
+        after = calculate_saju('2024-02-05', '12:00', 'male')
+        self.assertNotEqual(before['pillars'][0]['pillar'], after['pillars'][0]['pillar'])
+        self.assertNotEqual(before['pillars'][1]['pillar'], after['pillars'][1]['pillar'])
+
+    def test_month_pillar_changes_across_jingzhe_boundary(self):
+        before = calculate_saju('2024-03-04', '12:00', 'male')
+        after = calculate_saju('2024-03-06', '12:00', 'male')
+        self.assertEqual(before['pillars'][0]['pillar'], after['pillars'][0]['pillar'])
+        self.assertNotEqual(before['pillars'][1]['pillar'], after['pillars'][1]['pillar'])
+
     def test_unselected_gender_does_not_generate_daewoon(self):
         result = calculate_saju('1990-05-17', '14:30', 'other')
         self.assertEqual(result['daewoon'], [])
