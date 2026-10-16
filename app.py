@@ -530,9 +530,19 @@ def payment_success():
         if confirm.status_code >= 400:
             print('TOSS CONFIRM ERROR:', confirm.status_code, confirm.text)
             return render_template('payment_result.html', success=False, message='결제 승인에 실패했습니다. 잠시 후 다시 시도해주세요.'), 400
-        reading_res = SUPABASE_ADMIN.table('readings').select('id,free_summary').eq('id', order['reading_id']).single().execute()
-        saved = (reading_res.data or {}).get('free_summary') or {}
+        reading_res = SUPABASE_ADMIN.table('readings').select('id,birth_date,birth_time,gender,free_summary').eq('id', order['reading_id']).single().execute()
+        reading_data = reading_res.data or {}
+        saved = reading_data.get('free_summary') or {}
         calculation = saved.get('calculation') if isinstance(saved, dict) else None
+        # 구버전 저장 계산값에 대운 메타정보가 없으면 출생정보로 최신 계산을 수행합니다.
+        if reading_data.get('birth_date') and (
+            not isinstance(calculation, dict) or not calculation.get('daewoon_meta')
+        ):
+            calculation = calculate_saju(
+                reading_data.get('birth_date'),
+                reading_data.get('birth_time') or '',
+                reading_data.get('gender') or ''
+            )
         if not calculation:
             return render_template('payment_result.html', success=False, message='사주 분석 데이터를 찾을 수 없습니다.'), 500
         report = make_detailed_report(calculation)
