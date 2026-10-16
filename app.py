@@ -142,11 +142,11 @@ def make_detailed_report(analysis):
     strongest = max(counts, key=counts.get) if counts else elem
     weakest = min(counts, key=counts.get) if counts else elem
     day = analysis.get('day_master_label', '')
-    birth_year = int(str(analysis.get('birth_date','2000-01-01'))[:4])
     current_year = date.today().year
-    age = current_year - birth_year + 1
     daewoon = analysis.get('daewoon') or []
-    current_daewoon = next((d for d in daewoon if d.get('start_age', 999) <= age <= d.get('end_age', -1)), None)
+    # 대운 항목에는 라이브러리가 산출한 시작/종료 연도가 있으므로,
+    # 현재 구간 판정은 한국식 세는나이 추정 대신 해당 연도 범위로 확인합니다.
+    current_daewoon = next((d for d in daewoon if d.get('start_year', 999999) <= current_year <= d.get('end_year', -1)), None)
 
     profiles = {
         '목': {
@@ -491,7 +491,7 @@ def payment_success():
         if not calculation:
             return render_template('payment_result.html', success=False, message='사주 분석 데이터를 찾을 수 없습니다.'), 500
         report = make_detailed_report(calculation)
-        report['_version'] = 6
+        report['_version'] = 7
         SUPABASE_ADMIN.table('orders').update({'payment_key':payment_key,'status':'PAID','paid_at':'now()'}).eq('order_id', order_id).execute()
         SUPABASE_ADMIN.table('paid_reports').upsert({'reading_id':order['reading_id'],'report':report}, on_conflict='reading_id').execute()
         return redirect(url_for('saved_saju_result', reading_id=order['reading_id']) + '?paid=1')
@@ -540,7 +540,7 @@ def regenerate_report():
             return {'error':'사주 분석 데이터를 찾을 수 없습니다.'}, 500
 
         report = make_detailed_report(calculation)
-        report['_version'] = 6
+        report['_version'] = 7
         SUPABASE_ADMIN.table('paid_reports').upsert(
             {'reading_id': reading_id, 'report': report},
             on_conflict='reading_id'
