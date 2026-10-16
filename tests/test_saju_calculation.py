@@ -58,7 +58,16 @@ class SajuCalculationTests(unittest.TestCase):
                 result = calculate_saju('1990-05-17', '14:30', gender)
                 meta = result['daewoon_meta']
                 self.assertIn(meta['direction'], ('순행', '역행'))
-                self.assertRegex(meta['start_date'], r'^\\d{4}-\\d{2}-\\d{2}
+                self.assertRegex(meta['start_date'], r'^\d{4}-\d{2}-\d{2}$')
+                self.assertGreaterEqual(meta['start_years'], 0)
+                self.assertGreaterEqual(meta['start_months'], 0)
+                self.assertGreaterEqual(meta['start_days'], 0)
+
+    def test_daewoon_direction_can_differ_by_gender(self):
+        male = calculate_saju('1990-05-17', '14:30', 'male')
+        female = calculate_saju('1990-05-17', '14:30', 'female')
+        self.assertNotEqual(male['daewoon_meta']['direction'], female['daewoon_meta']['direction'])
+        self.assertNotEqual(male['daewoon'][0]['gan_zhi'], female['daewoon'][0]['gan_zhi'])
 
     def test_unselected_gender_does_not_generate_daewoon(self):
         result = calculate_saju('1990-05-17', '14:30', 'other')
