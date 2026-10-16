@@ -23,6 +23,16 @@ class SajuCalculationTests(unittest.TestCase):
                 self.assertEqual(len(result['pillars']), 4)
                 self.assertEqual(sum(result['element_counts'].values()), 8)
 
+    def test_date_and_time_format_must_be_canonical(self):
+        for birth_date, birth_time in [
+            ('1990-5-17', '14:30'),
+            ('1990-05-17', '2:30'),
+            ('1990-05-17', '14:3'),
+        ]:
+            with self.subTest(birth_date=birth_date, birth_time=birth_time):
+                with self.assertRaises(ValueError):
+                    calculate_saju(birth_date, birth_time, 'male')
+
     def test_unselected_gender_does_not_generate_daewoon(self):
         result = calculate_saju('1990-05-17', '14:30', 'other')
         self.assertEqual(result['daewoon'], [])
