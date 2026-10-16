@@ -180,5 +180,36 @@ class SajuCalculationTests(unittest.TestCase):
         self.assertIn('갑자 대운', report['대운과 시기'])
 
 
+    def test_report_includes_daewoon_direction_and_start_metadata(self):
+        year = date.today().year
+        analysis = {
+            'day_master_element': '수',
+            'element_counts': {'목': 1, '화': 1, '토': 2, '금': 2, '수': 2},
+            'day_master_label': '임(壬)',
+            'birth_date': '1990-05-17',
+            'birth_time': '14:30',
+            'gender': 'male',
+            'daewoon_meta': {
+                'direction': '순행',
+                'start_date': '1993-08-12',
+                'start_years': 3,
+                'start_months': 2,
+                'start_days': 25,
+            },
+            'daewoon': [{
+                'gan_zhi_label': '갑자',
+                'start_age': 1,
+                'end_age': 10,
+                'start_year': year,
+                'end_year': year,
+            }],
+            'pillars': [],
+        }
+        report = make_detailed_report(analysis)
+        self.assertIn('순행', report['대운과 시기'])
+        self.assertIn('1993-08-12', report['대운과 시기'])
+        self.assertIn('3년 2개월 25일', report['대운과 시기'])
+
+
 if __name__ == '__main__':
     unittest.main()
