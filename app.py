@@ -370,9 +370,16 @@ def calculate_saju(birth_date, birth_time, gender):
             'daewoon':daewoon,'summary':summary,'teaser':make_teaser({'day_master_label':gan_label(day_master),'day_master_element':day_master_element,'element_counts':counts})
         }
 
+    except ValueError as exc:
+        # Preserve explicit input-validation messages; normalize library/parser errors.
+        message = str(exc)
+        if message in ('생년월일을 입력해주세요.', '생년월일 형식이 올바르지 않습니다.', '출생시간 형식이 올바르지 않습니다.'):
+            raise
+        print('SAJU CALC ERROR:', repr(exc))
+        raise ValueError('생년월일 또는 출생시간을 확인해주세요.') from exc
     except Exception as exc:
-        print('SAJU CALC ERROR:',repr(exc))
-        raise ValueError('생년월일 또는 출생시간을 확인해주세요.')
+        print('SAJU CALC ERROR:', repr(exc))
+        raise ValueError('사주 계산 중 문제가 발생했습니다. 입력 정보를 확인한 뒤 다시 시도해주세요.') from exc
 
 @app.context_processor
 def inject_config():
