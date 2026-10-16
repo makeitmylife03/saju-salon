@@ -231,7 +231,7 @@ def make_detailed_report(analysis):
     count_text = ', '.join(f'{k} {v}' for k,v in counts.items())
     daewoon_text = '대운 자료가 계산되지 않았습니다.'
     if current_daewoon:
-        daewoon_text = f"현재 나이 기준으로는 {current_daewoon.get('gan_zhi_label','')} 대운({current_daewoon.get('start_age')}~{current_daewoon.get('end_age')}세, {current_daewoon.get('start_year')}~{current_daewoon.get('end_year')}) 구간에 해당합니다. 이 시기는 삶의 모든 일이 반드시 바뀐다는 뜻이 아니라, 특정 주제에 관심과 선택이 커질 수 있는 구간으로 참고하는 것이 좋습니다."
+        daewoon_text = f"현재 연도 기준으로는 {current_daewoon.get('gan_zhi_label','')} 대운({current_daewoon.get('start_age')}~{current_daewoon.get('end_age')}세, {current_daewoon.get('start_year')}~{current_daewoon.get('end_year')}) 구간에 해당합니다. 이 시기는 삶의 모든 일이 반드시 바뀐다는 뜻이 아니라, 특정 주제에 관심과 선택이 커질 수 있는 구간으로 참고하는 것이 좋습니다."
     elif daewoon:
         daewoon_text = f"계산된 대운은 {daewoon[0].get('start_year')}년부터 이어지며, 각 10년 구간의 성격을 현재 상황과 함께 비교해보는 방식으로 참고할 수 있습니다."
 
