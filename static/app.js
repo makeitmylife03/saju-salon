@@ -253,7 +253,7 @@
 
       // 결제된 결과는 최신 리포트 생성 로직으로 한 번 더 확인합니다.
       // 기존 리포트가 없거나 이전 버전이어도 새 리포트를 받아 표시합니다.
-      if (!report?.report || Number(report.report._version || 0) < 6) {
+      if (!report?.report || Number(report.report._version || 0) < 7) {
         try {
           const refresh = await fetch('/payment/regenerate-report', {
             method: 'POST',
