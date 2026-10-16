@@ -48,6 +48,18 @@ class SajuCalculationTests(unittest.TestCase):
             self.assertLessEqual(previous['start_year'], current['start_year'])
             self.assertLessEqual(previous['start_age'], current['start_age'])
 
+    def test_invalid_date_and_time_have_specific_messages(self):
+        cases = [
+            ('1990-02-30', '14:30', '생년월일을 올바른 날짜로 입력해주세요.'),
+            ('1990-05-17', '25:00', '출생시간을 올바르게 입력해주세요.'),
+            ('1990-5-17', '14:30', '생년월일 형식이 올바르지 않습니다.'),
+            ('1990-05-17', '2:30', '출생시간 형식이 올바르지 않습니다.'),
+        ]
+        for birth_date, birth_time, expected in cases:
+            with self.subTest(birth_date=birth_date, birth_time=birth_time):
+                with self.assertRaisesRegex(ValueError, expected):
+                    calculate_saju(birth_date, birth_time, 'male')
+
     def test_invalid_birth_date_and_time_are_rejected(self):
         for birth_date, birth_time in [
             ('1990-02-30', '14:30'),
@@ -81,7 +93,7 @@ class SajuCalculationTests(unittest.TestCase):
             'gender': 'male',
         })
         self.assertEqual(response.status_code, 400)
-        self.assertIn('생년월일 또는 출생시간을 확인해주세요'.encode(), response.data)
+        self.assertIn('생년월일을 올바른 날짜로 입력해주세요.'.encode(), response.data)
 
     def test_missing_birth_time_is_recorded_as_unknown(self):
         result = calculate_saju('1990-05-17', '', 'female')
