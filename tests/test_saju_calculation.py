@@ -12,6 +12,28 @@ class SajuCalculationTests(unittest.TestCase):
         self.assertEqual(sum(result['element_counts'].values()), 8)
         self.assertTrue(result['day_master_label'])
 
+    def test_multiple_birth_dates_produce_valid_four_pillars(self):
+        for birth_date, birth_time, gender in [
+            ('1988-02-29', '00:05', 'male'),
+            ('2000-01-01', '23:55', 'female'),
+            ('2024-02-29', '12:00', 'male'),
+        ]:
+            with self.subTest(birth_date=birth_date, birth_time=birth_time):
+                result = calculate_saju(birth_date, birth_time, gender)
+                self.assertEqual(len(result['pillars']), 4)
+                self.assertEqual(sum(result['element_counts'].values()), 8)
+
+    def test_invalid_birth_date_and_time_are_rejected(self):
+        for birth_date, birth_time in [
+            ('1990-02-30', '14:30'),
+            ('1990-13-01', '14:30'),
+            ('1990-05-17', '25:00'),
+            ('1990-05-17', '12:99'),
+        ]:
+            with self.subTest(birth_date=birth_date, birth_time=birth_time):
+                with self.assertRaises(ValueError):
+                    calculate_saju(birth_date, birth_time, 'male')
+
     def test_missing_birth_time_is_recorded_as_unknown(self):
         result = calculate_saju('1990-05-17', '', 'female')
         self.assertEqual(result['birth_time'], '')
