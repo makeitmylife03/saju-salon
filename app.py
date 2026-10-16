@@ -233,9 +233,22 @@ def make_detailed_report(analysis):
     if analysis.get('gender') not in GENDER_MAP:
         daewoon_text = '성별 정보를 선택하지 않아 대운의 순행·역행 계산을 생략했습니다. 성별 선택에 따라 전통적인 대운 계산 방식이 달라질 수 있으므로, 대운 시기를 확인하려면 성별 정보를 입력한 결과를 참고해주세요.'
     elif current_daewoon:
-        daewoon_text = f"현재 연도 기준으로는 {current_daewoon.get('gan_zhi_label','')} 대운({current_daewoon.get('start_age')}~{current_daewoon.get('end_age')}세, {current_daewoon.get('start_year')}~{current_daewoon.get('end_year')}) 구간에 해당합니다. 이 시기는 삶의 모든 일이 반드시 바뀐다는 뜻이 아니라, 특정 주제에 관심과 선택이 커질 수 있는 구간으로 참고하는 것이 좋습니다."
+        meta = analysis.get('daewoon_meta') or {}
+        direction = meta.get('direction')
+        direction_text = f"대운 진행 방향은 {direction}이며, " if direction else ""
+        start_date = meta.get('start_date')
+        start_text = f"대운 시작 기준일은 {start_date}로 계산되었습니다. " if start_date else ""
+        start_age_text = ""
+        if meta.get('start_years') is not None:
+            start_age_text = f"대운 시작 나이는 약 {meta.get('start_years')}년 {meta.get('start_months', 0)}개월 {meta.get('start_days', 0)}일 기준으로 산출됩니다. "
+        daewoon_text = f"{direction_text}{start_text}{start_age_text}현재 연도 기준으로는 {current_daewoon.get('gan_zhi_label','')} 대운({current_daewoon.get('start_age')}~{current_daewoon.get('end_age')}세, {current_daewoon.get('start_year')}~{current_daewoon.get('end_year')}) 구간에 해당합니다. 이 시기는 삶의 모든 일이 반드시 바뀐다는 뜻이 아니라, 특정 주제에 관심과 선택이 커질 수 있는 구간으로 참고하는 것이 좋습니다."
     elif daewoon:
-        daewoon_text = f"계산된 대운은 {daewoon[0].get('start_year')}년부터 이어지며, 각 10년 구간의 성격을 현재 상황과 함께 비교해보는 방식으로 참고할 수 있습니다."
+        meta = analysis.get('daewoon_meta') or {}
+        direction = meta.get('direction')
+        direction_text = f"대운 진행 방향은 {direction}입니다. " if direction else ""
+        start_date = meta.get('start_date')
+        start_text = f"대운 시작 기준일은 {start_date}로 계산되었습니다. " if start_date else ""
+        daewoon_text = f"{direction_text}{start_text}계산된 대운은 {daewoon[0].get('start_year')}년부터 이어지며, 각 10년 구간의 성격을 현재 상황과 함께 비교해보는 방식으로 참고할 수 있습니다."
 
     pillars = analysis.get('pillars', [])
     pillar_names = ['년주', '월주', '일주', '시주']
