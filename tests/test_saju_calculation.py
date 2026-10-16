@@ -23,6 +23,21 @@ class SajuCalculationTests(unittest.TestCase):
                 self.assertEqual(len(result['pillars']), 4)
                 self.assertEqual(sum(result['element_counts'].values()), 8)
 
+    def test_unselected_gender_does_not_generate_daewoon(self):
+        result = calculate_saju('1990-05-17', '14:30', 'other')
+        self.assertEqual(result['daewoon'], [])
+
+    def test_daewoon_ranges_are_ordered_and_non_overlapping(self):
+        result = calculate_saju('1990-05-17', '14:30', 'male')
+        periods = result['daewoon']
+        self.assertTrue(periods)
+        for period in periods:
+            self.assertLessEqual(period['start_year'], period['end_year'])
+            self.assertLessEqual(period['start_age'], period['end_age'])
+        for previous, current in zip(periods, periods[1:]):
+            self.assertLessEqual(previous['start_year'], current['start_year'])
+            self.assertLessEqual(previous['start_age'], current['start_age'])
+
     def test_invalid_birth_date_and_time_are_rejected(self):
         for birth_date, birth_time in [
             ('1990-02-30', '14:30'),
