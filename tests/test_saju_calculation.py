@@ -53,6 +53,20 @@ class SajuCalculationTests(unittest.TestCase):
         report = make_detailed_report(result)
         self.assertIn('출생시간을 입력하지 않아 정오를 임시 기준으로 계산했습니다', report['내 사주의 구조'])
 
+    def test_report_explains_daewoon_omission_when_gender_not_selected(self):
+        analysis = {
+            'day_master_element': '수',
+            'element_counts': {'목': 1, '화': 1, '토': 2, '금': 2, '수': 2},
+            'day_master_label': '임(壬)',
+            'birth_date': '1990-05-17',
+            'birth_time': '',
+            'gender': 'other',
+            'daewoon': [],
+            'pillars': [],
+        }
+        report = make_detailed_report(analysis)
+        self.assertIn('성별 정보를 선택하지 않아 대운', report['대운과 시기'])
+
     def test_report_uses_current_year_for_daewoon_range(self):
         year = date.today().year
         analysis = {
