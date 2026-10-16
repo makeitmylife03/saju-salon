@@ -348,8 +348,17 @@ def calculate_saju(birth_date, birth_time, gender):
         }
 
         daewoon = []
+        daewoon_meta = {'direction': '', 'start_date': '', 'start_years': None, 'start_months': None, 'start_days': None}
         if gender in GENDER_MAP:
             yun = eight.getYun(GENDER_MAP[gender], 1)
+            start_solar = yun.getStartSolar()
+            daewoon_meta = {
+                'direction': '순행' if yun.isForward() else '역행',
+                'start_date': start_solar.toYmd(),
+                'start_years': yun.getStartYear(),
+                'start_months': yun.getStartMonth(),
+                'start_days': yun.getStartDay()
+            }
             for item in yun.getDaYun(10)[1:]:
                 gz = item.getGanZhi()
                 daewoon.append({
@@ -374,7 +383,7 @@ def calculate_saju(birth_date, birth_time, gender):
             'wuxing':wuxing,'element_counts':counts,'day_master':day_master,
             'day_master_element':day_master_element,'day_master_label':gan_label(day_master),
             'ten_gods':ten_gods,'na_yin':na_yin,'twelve':twelve,'extra':extra,
-            'daewoon':daewoon,'summary':summary,'teaser':make_teaser({'day_master_label':gan_label(day_master),'day_master_element':day_master_element,'element_counts':counts})
+            'daewoon':daewoon,'daewoon_meta':daewoon_meta,'summary':summary,'teaser':make_teaser({'day_master_label':gan_label(day_master),'day_master_element':day_master_element,'element_counts':counts})
         }
 
     except ValueError as exc:
