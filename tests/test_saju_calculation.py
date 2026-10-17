@@ -238,14 +238,20 @@ class SajuCalculationTests(unittest.TestCase):
              patch('app.make_detailed_report', return_value={'대운과 시기': '순행'}) as report_builder:
             post.return_value.status_code = 200
             post.return_value.json.return_value = {'status': 'DONE'}
-            orders = supabase.table.return_value
+            orders = __import__('unittest').mock.Mock()
+            readings = __import__('unittest').mock.Mock()
+            paid_reports = __import__('unittest').mock.Mock()
+            supabase.table.side_effect = lambda name: {
+                'orders': orders,
+                'readings': readings,
+                'paid_reports': paid_reports,
+            }[name]
             orders.select.return_value.eq.return_value.single.return_value.execute.return_value.data = {
                 'order_id': 'order-test',
                 'reading_id': 'reading-test',
                 'amount': 9900,
                 'status': 'READY',
             }
-            readings = supabase.table.return_value
             readings.select.return_value.eq.return_value.single.return_value.execute.return_value.data = refreshed
 
             response = client.get('/payment/success?paymentKey=pay-test&orderId=order-test&amount=9900')
